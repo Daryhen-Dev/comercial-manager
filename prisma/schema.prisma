@@ -1,0 +1,16 @@
+// Legacy read-only schema: owned by the WinForms system, shared with
+// comercial-web. Never run `prisma migrate` here — refresh with `pnpm db:pull`
+// then `pnpm db:generate`. See DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md.
+//
+// Prisma 7: no `url` in the datasource block. The connection string lives in
+// prisma.config.ts, and the client talks to SQL Server through
+// @prisma/adapter-mssql instead of the removed Rust query engine.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
