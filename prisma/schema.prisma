@@ -1,16 +1,3087 @@
-// Legacy read-only schema: owned by the WinForms system, shared with
-// comercial-web. Never run `prisma migrate` here — refresh with `pnpm db:pull`
-// then `pnpm db:generate`. See DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md.
-//
-// Prisma 7: no `url` in the datasource block. The connection string lives in
-// prisma.config.ts, and the client talks to SQL Server through
-// @prisma/adapter-mssql instead of the removed Rust query engine.
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
   provider = "sqlserver"
+}
+
+model Ajuste_Instancia_Pesaje {
+  Ajuste_Instancia_PesajeId Int       @id(map: "PK_Ajuste_Instancia_Pesaje") @default(autoincrement())
+  IdLocal                   Int?      @unique(map: "IX_Ajuste_Instancia_Pesaje")
+  State                     Boolean?
+  Modulo                    String?   @db.NVarChar(20)
+  Flujo                     String?   @db.NVarChar(20)
+  ReservadoPorUsuarioId     Int?
+  ReservaId                 String?   @db.UniqueIdentifier
+  ReservadoEn               DateTime? @db.DateTime
+}
+
+model Ajuste_Valor_Maximo {
+  AjusteValorMaximoId     Int       @id(map: "PK_Ajuste_Valor_Maximo") @default(autoincrement())
+  AjusteValorMaximoTipoId Int?
+  CantidadMaxima          Decimal?  @db.Decimal(18, 2)
+  FechaCreacion           DateTime? @db.DateTime
+  FechaEdicion            DateTime? @db.DateTime
+}
+
+model Ajuste_Valor_Maximo_Tipo {
+  AjusteValorMaximoTipoId Int     @id(map: "PK_Ajuste_Valor_Maximo_Tipo") @default(autoincrement())
+  Descripcion             String? @db.NVarChar(150)
+}
+
+model AjusteIpSucursal {
+  AjusteIpSucursalId Int       @id(map: "PK_AjusteIPSucursal") @default(autoincrement())
+  IdLocal            Int?
+  Detalle            String?   @db.NVarChar(250)
+  Ip                 String?   @unique(map: "IX_AjusteIPSucursal") @db.NVarChar(25)
+  DateCreate         DateTime? @db.DateTime
+  DateUpdate         DateTime? @db.DateTime
+}
+
+model AjusteSimple {
+  AjusteId    Int       @id(map: "PK_Ajustes") @default(autoincrement())
+  Description String?   @db.NVarChar(150)
+  State       Boolean?
+  DateUpdate  DateTime? @db.DateTime
+  DateCreate  DateTime? @db.DateTime
+}
+
+model AlmacenamientoCompra {
+  IDAlmacenamientoCompra Int       @id(map: "PK_AlmacenamientoCompra_1") @default(autoincrement())
+  IDProducto             Int?
+  IDLocal                Int?
+  IDRomana               String?   @db.NVarChar(50)
+  IDBoletoEntrada        String?   @db.NVarChar(50)
+  IDCompraGeneral        String?   @db.NVarChar(50)
+  IDCascaraArroz         String?   @db.NVarChar(50)
+  Precio                 Decimal?  @db.Decimal(18, 2)
+  ValorTotal             Decimal?  @db.Decimal(18, 2)
+  PesoPagar              Decimal?  @db.Decimal(18, 2)
+  Humedad                Decimal?  @db.Decimal(18, 2)
+  PrecioDelDia           Decimal?  @db.Decimal(18, 6)
+  Porcentaje             Decimal?  @db.Decimal(18, 6)
+  Merma                  Decimal?  @db.Decimal(18, 2)
+  Neto                   Decimal?  @db.Decimal(18, 2)
+  FechaHora              DateTime? @db.DateTime
+  Fecha                  DateTime? @db.Date
+}
+
+model AlmacenamientoVenta {
+  IDAlmacenamientoVenta    Int       @id(map: "PK_AlmacenamientoVenta") @default(autoincrement())
+  IDLocal                  Int?
+  IDProducto               Int?
+  IDEmbodegadoVentaEntrada String?   @db.NVarChar(50)
+  IDBoletoEntradaVenta     String?   @db.NVarChar(50)
+  IDCascaraArroz           String?   @db.NVarChar(50)
+  IDVentaGeneral           String?   @db.NVarChar(50)
+  IDBodeguitaVenta         String?   @db.NVarChar(50)
+  Precio                   Decimal?  @db.Decimal(18, 8)
+  ValorTotal               Decimal?  @db.Decimal(18, 8)
+  PesoPagar                Decimal?  @db.Decimal(18, 8)
+  DiferenciaH              Decimal?  @db.Decimal(18, 8)
+  Humedad                  Decimal?  @db.Decimal(8, 3)
+  Impureza                 Decimal?  @db.Decimal(8, 3)
+  Neto                     Decimal?  @db.Decimal(18, 8)
+  Porcentaje               Decimal?  @db.Decimal(18, 8)
+  Merma                    Decimal?  @db.Decimal(18, 8)
+  PrecioDia                Decimal?  @db.Decimal(18, 8)
+  FechaHora                DateTime? @db.DateTime
+  Fecha                    DateTime? @db.Date
+}
+
+model Arqueo {
+  IdArqueo     Int       @id(map: "PK_Arqueo") @default(autoincrement())
+  IdLocal      Int?
+  Fecha        DateTime? @db.DateTime
+  SaldoContado Decimal?  @db.Decimal(18, 2)
+  Diferencia   Decimal?  @db.Decimal(18, 2)
+  IdUser       Int?
+  Observacion  String?   @db.NVarChar(Max)
+  Estado       Boolean?
+
+  @@index([IdLocal, Fecha], map: "IX_Arqueo_Local_Fecha")
+}
+
+model Arqueo_Cuenta {
+  IdArqueoCuenta         Int      @id(map: "PK_Arqueo_Cuenta") @default(autoincrement())
+  IdArqueo               Int?
+  IdArqueoCuentaCatalogo Int?
+  Saldo                  Decimal? @db.Decimal(18, 2)
+  Automatico             Boolean?
+
+  @@index([IdArqueo], map: "IX_Arqueo_Cuenta_Arqueo")
+}
+
+model Arqueo_Cuenta_Catalogo {
+  IdArqueoCuentaCatalogo Int      @id(map: "PK_Arqueo_Cuenta_Catalogo") @default(autoincrement())
+  IdLocal                Int?
+  idContaCuenta          Int?
+  Descripcion            String?  @db.NVarChar(150)
+  Estado                 Boolean?
+  Automatico             Boolean?
+
+  @@index([IdLocal], map: "IX_Arqueo_Cuenta_Catalogo_Local")
+}
+
+model Arqueo_Documento {
+  IdArqueoDocumento         Int      @id(map: "PK_Arqueo_Documento") @default(autoincrement())
+  IdArqueo                  Int?
+  IdArqueoDocumentoCatalogo Int?
+  Monto                     Decimal? @db.Decimal(18, 2)
+  Referencia                String?  @db.NVarChar(100)
+
+  @@index([IdArqueo], map: "IX_Arqueo_Documento_Arqueo")
+}
+
+model Arqueo_Documento_Catalogo {
+  IdArqueoDocumentoCatalogo Int      @id(map: "PK_Arqueo_Documento_Catalogo") @default(autoincrement())
+  IdLocal                   Int?
+  Descripcion               String?  @db.NVarChar(100)
+  Estado                    Boolean?
+
+  @@index([IdLocal], map: "IX_Arqueo_Documento_Catalogo_Local")
+}
+
+model Arqueo_Efectivo {
+  IdArqueoEfectivo Int      @id(map: "PK_Arqueo_Efectivo") @default(autoincrement())
+  IdArqueo         Int?
+  Tipo             String?  @db.NVarChar(20)
+  Denominacion     Decimal? @db.Decimal(18, 2)
+  Cantidad         Int?
+  Subtotal         Decimal? @db.Decimal(18, 2)
+
+  @@index([IdArqueo], map: "IX_Arqueo_Efectivo_Arqueo")
+}
+
+model Banco {
+  IDBanco         Int            @id(map: "PK_Banco") @default(autoincrement())
+  Nombre          String?        @db.NVarChar(250)
+  Cuenta          String?        @db.NVarChar(250)
+  FechaCreado     DateTime?      @db.DateTime
+  FechaModificado DateTime?      @db.DateTime
+  activo          Boolean?
+  IdBancoTipo     Int?
+  Banco_Numeric   Banco_Numeric?
+}
+
+model Banco_Cheque_Validacion {
+  idBanco_Cheque_Validacion Int       @id(map: "PK_Banco_Cheque_Limite")
+  B_Cantidad_Maxima         Decimal?  @db.Decimal(18, 2)
+  B_Fecha_Modificado        DateTime? @db.DateTime
+}
+
+model Banco_Conciliacion {
+  IdConciliacion                     Int                                  @id(map: "PK_Banco_Conciliacion") @default(autoincrement())
+  IdBanco                            Int?
+  FechaInicial                       DateTime?                            @db.DateTime
+  FechaFinal                         DateTime?                            @db.DateTime
+  Banco_Conciliacion_Detalle_Banco   Banco_Conciliacion_Detalle_Banco[]
+  Banco_Conciliacion_Detalle_Sistema Banco_Conciliacion_Detalle_Sistema[]
+  Banco_Conciliacion_Detalle_Union   Banco_Conciliacion_Detalle_Union[]
+}
+
+model Banco_Conciliacion_Data {
+  IdConciliacionData           Int                           @id(map: "PK_Banco_conciliacion_Data") @default(autoincrement())
+  IdConciliacionType           Int?
+  IdConciliacionUpdated        Int?
+  Description                  String?                       @db.NVarChar(250)
+  DescriptExtract              String?                       @db.NVarChar(250)
+  Documento                    String?                       @db.NVarChar(100)
+  DocumentoExtract             String?                       @db.NVarChar(100)
+  Debito                       Decimal?                      @db.Decimal(18, 2)
+  Credito                      Decimal?                      @db.Decimal(18, 2)
+  Concatenar                   String?                       @db.NVarChar(250)
+  FechaEdit                    DateTime?                     @db.DateTime
+  Estado                       Boolean?
+  Banco_Conciliacion_Data_Type Banco_Conciliacion_Data_Type? @relation(fields: [IdConciliacionType], references: [IdConciliacionType], onDelete: NoAction, onUpdate: NoAction, map: "FK_Banco_Conciliacion_Data_Banco_Conciliacion_Data_Type")
+  Banco_Conciliacion_Updated   Banco_Conciliacion_Updated?   @relation(fields: [IdConciliacionUpdated], references: [IdConciliacionUpdated], onDelete: Cascade, onUpdate: NoAction, map: "FK_Banco_Conciliacion_Data_Banco_Conciliacion_Updated")
+}
+
+model Banco_Conciliacion_Data_Type {
+  IdConciliacionType      Int                       @id(map: "PK_Banco_Conciliacion_Type")
+  name                    String?                   @db.NVarChar(50)
+  Banco_Conciliacion_Data Banco_Conciliacion_Data[]
+}
+
+model Banco_Conciliacion_Detalle_Banco {
+  IdConciliacionInfo Int                 @id(map: "PK_Banco_Conciliacion_Detalle_Info") @default(autoincrement())
+  IdConciliacion     Int?
+  IdConciliacionData Int?
+  IdConciliacionType Int?
+  Description        String?             @db.NVarChar(250)
+  Documento          String?             @db.NVarChar(100)
+  Debito             Decimal?            @db.Decimal(18, 2)
+  Credito            Decimal?            @db.Decimal(18, 2)
+  Fecha              DateTime?           @db.DateTime
+  Banco_Conciliacion Banco_Conciliacion? @relation(fields: [IdConciliacion], references: [IdConciliacion], onDelete: NoAction, onUpdate: NoAction, map: "FK_Banco_Conciliacion_Detalle_Info_Banco_Conciliacion")
+}
+
+model Banco_Conciliacion_Detalle_Sistema {
+  IdConciliacionSistema Int                 @id(map: "PK_Banco_Conciliacion_Detalle_Sistema") @default(autoincrement())
+  IdConciliacion        Int?
+  IdAsientoCuenta       Int?
+  IdConciliacionType    Int?
+  Description           String?             @db.NVarChar(250)
+  Documento             String?             @db.NVarChar(100)
+  Debito                Decimal?            @db.Decimal(18, 2)
+  Credito               Decimal?            @db.Decimal(18, 2)
+  Fecha                 DateTime?           @db.DateTime
+  Banco_Conciliacion    Banco_Conciliacion? @relation(fields: [IdConciliacion], references: [IdConciliacion], onDelete: NoAction, onUpdate: NoAction, map: "FK_Banco_Conciliacion_Detalle_Sistema_Banco_Conciliacion")
+}
+
+model Banco_Conciliacion_Detalle_Union {
+  IdConciliacionDetalle Int                 @id(map: "PK_Banco_Conciliacion_Detalle") @default(autoincrement())
+  IdConciliacion        Int?
+  IdConciliacionData    Int?
+  IdAsientoCuenta       Int?
+  IdConciliacionType    Int?
+  Description           String?             @db.NVarChar(250)
+  Documento             String?             @db.NVarChar(100)
+  Debito                Decimal?            @db.Decimal(18, 2)
+  Credito               Decimal?            @db.Decimal(18, 2)
+  Fecha                 DateTime?           @db.DateTime
+  Banco_Conciliacion    Banco_Conciliacion? @relation(fields: [IdConciliacion], references: [IdConciliacion], onDelete: NoAction, onUpdate: NoAction, map: "FK_Banco_Conciliacion_Detalle_Union_Banco_Conciliacion")
+}
+
+model Banco_Conciliacion_Updated {
+  IdConciliacionUpdated   Int                       @id(map: "PK_Banco_Conciliacion_Updated") @default(autoincrement())
+  IdBanco                 Int?
+  Fecha                   DateTime?                 @db.DateTime
+  Banco_Conciliacion_Data Banco_Conciliacion_Data[]
+}
+
+model Banco_Numeric {
+  IdBanco     Int       @id(map: "PK_Banco_Numeric")
+  Inicial     Int?
+  Final       Int?
+  FechaAdd    DateTime? @db.DateTime
+  FechaModify DateTime? @db.DateTime
+  Banco       Banco     @relation(fields: [IdBanco], references: [IDBanco], onUpdate: NoAction, map: "FK_Banco_Numeric_Banco")
+}
+
+model Banco_Tipo {
+  Id     String  @id(map: "PK_Banco_Tipo") @db.NChar(10)
+  Nombre String? @db.NVarChar(250)
+}
+
+model Banco_Tipo_Transaccion {
+  Id     Int     @id(map: "PK_Banco_Tipo_Transaccion") @default(autoincrement())
+  Nombre String? @db.NVarChar(100)
+}
+
+model Banco_Transaccion {
+  IdTransferenciaEmitida    Int       @id(map: "PK_Banco_Transferencia_Emitida") @default(autoincrement())
+  Banco_Tipo_Transaccion_Id Int?
+  IdBanco                   Int?
+  IdCliente                 Int?
+  IdUsuario                 Int?
+  IdAsientoDetalle          Int?
+  NTransferencia            String?   @db.NVarChar(250)
+  Detalle                   String?   @db.Text
+  Cantidad                  Decimal?  @db.Decimal(18, 2)
+  Fecha                     DateTime? @db.DateTime
+  FechaModificado           DateTime? @db.DateTime
+  Estado                    Boolean?
+}
+
+model BancoCredito {
+  IDCreditoBanco Int     @id(map: "PK_BancoCredito") @default(autoincrement())
+  Nombre         String? @db.NVarChar(250)
+  NCuenta        String? @db.NVarChar(250)
+}
+
+model BasculaPorIP {
+  idLocal         Int       @id(map: "PK_BasculaPorIP")
+  ip              String?   @db.NVarChar(50)
+  puerto          Int?
+  fechaModificado DateTime? @db.DateTime
+}
+
+model BasculaPuerto {
+  IDBascula   Int     @id(map: "PK_BasculaPuerto") @default(autoincrement())
+  Puerto      Int?
+  Descripcion String? @db.NVarChar(100)
+}
+
+model BoletoEntrada {
+  IDBoletoEntrada Int       @id(map: "PK_BoletoEntrada_1") @default(autoincrement())
+  IDLocal         Int?
+  IDCliente       Int?
+  IDProducto      Int?
+  IDZona          Int?
+  CodSalida       String    @db.NVarChar(50)
+  CodDia          String?   @db.NVarChar(50)
+  Digita          String?   @db.NVarChar(Max)
+  Bascula         String?   @db.NVarChar(Max)
+  Placa           String?   @db.NVarChar(Max)
+  Precio          Decimal?  @db.Decimal(18, 2)
+  Humedad         Decimal?  @db.Decimal(8, 2)
+  Impureza        Decimal?  @db.Decimal(8, 2)
+  PesoEntrada     Decimal?  @db.Decimal(10, 2)
+  retencion       Decimal?  @db.Decimal(10, 2)
+  FechaHora       DateTime? @db.DateTime
+  Fecha           DateTime? @db.Date
+}
+
+model BoletoEntradaVenta {
+  IDBoletoEntradaVenta Int       @id(map: "PK_BoletoEntradaVenta") @default(autoincrement())
+  IDLocal              Int?
+  IDCliente            Int?
+  IDChofer             Int?
+  IDProducto           Int?
+  CodSalida            String    @db.NVarChar(50)
+  CodDia               String?   @db.NVarChar(50)
+  Digita               String?   @db.NVarChar(Max)
+  Bascula              String?   @db.NVarChar(Max)
+  Chofer               String?   @db.NVarChar(Max)
+  Placa                String?   @db.NVarChar(Max)
+  Precio               Decimal?  @db.Decimal(18, 2)
+  Humedad              Decimal?  @db.Decimal(8, 2)
+  Impureza             Decimal?  @db.Decimal(8, 2)
+  PesoEntrada          Decimal?  @db.Decimal(10, 2)
+  QQ                   Decimal?  @db.Decimal(10, 2)
+  Bultos               Decimal?  @db.Decimal(10, 2)
+  Peso                 Decimal?  @db.Decimal(8, 2)
+  NotaEmbarque         String?   @db.Text
+  PictureIn            Bytes?    @db.Image
+  FechaHora            DateTime? @db.DateTime
+  Fecha                DateTime? @db.Date
+  UrlPicture           String?   @db.NVarChar(150)
+}
+
+model BoletoSalida {
+  IDBoletoSalida  Int       @id(map: "PK_BoletoSalida_1") @default(autoincrement())
+  IDBoletoEntrada Int?
+  Digita          String?   @db.VarChar(Max)
+  PesoPagar       Decimal?  @db.Decimal(10, 2)
+  ValorPagar      Decimal?  @db.Decimal(10, 2)
+  PesoSalida      Decimal?  @db.Decimal(10, 2)
+  PesoSaco        Decimal?  @db.Decimal(8, 2)
+  FechaSalida     DateTime? @db.DateTime
+  Fecha           DateTime? @db.Date
+  Muestra         Int?
+}
+
+model BoletoSalidaVenta {
+  IDBoletoSalidaVenta  Int       @id(map: "PK_BoletoSalidaVenta_1") @default(autoincrement())
+  IDBoletoEntradaVenta Int?
+  Digita               String?   @db.NVarChar(Max)
+  PesoSalida           Decimal?  @db.Decimal(10, 2)
+  PesoPagar            Decimal?  @db.Decimal(10, 2)
+  Guia                 String?   @db.NVarChar(Max)
+  Destino              String?   @db.NVarChar(Max)
+  Nota                 String?   @db.NVarChar(Max)
+  PictureOut           Bytes?    @db.Image
+  FechaHora            DateTime? @db.DateTime
+  Fecha                DateTime? @db.Date
+  UrlPicture           String?   @db.NVarChar(150)
+}
+
+model CamaraIp {
+  CamaraId    Int       @id(map: "PK_CamaraIp") @default(autoincrement())
+  IdLocal     Int
+  Ip          String?   @db.NVarChar(50)
+  IpSalida    String?   @db.NVarChar(50)
+  Detalle     String?   @db.NVarChar(50)
+  Usuario     String?   @db.NVarChar(50)
+  Password    String?   @db.NVarChar(50)
+  DateUpdated DateTime? @db.DateTime
+  Estado      Boolean?
+}
+
+model Cheila_Gasto {
+  IdCheilaGasto    Int       @id(map: "PK_Cheila_Gasto") @default(autoincrement())
+  IdAsientoDetalle Int?
+  Fecha            DateTime? @db.DateTime
+}
+
+model Cheila_InterBancaria {
+  IdCheilaInterBan Int       @id(map: "PK_Cheila_InterBancaria") @default(autoincrement())
+  IdAsientoDetalle Int
+  Fecha            DateTime? @db.DateTime
+}
+
+model Cheila_Venta {
+  IdCheilaVenta Int      @id(map: "PK_Cheila_Venta") @default(autoincrement())
+  IdVentaKardex Int
+  Fecha         DateTime @db.DateTime
+}
+
+model Cheque_Cobrado_Caja {
+  idChequeCobrado Int       @id(map: "PK_Cobro_Cheque_Caja") @default(autoincrement())
+  idCheque        Int?
+  idUser          Int?
+  idLocal         Int?
+  cantidad        Decimal?  @db.Decimal(18, 2)
+  fecha           DateTime? @db.DateTime
+}
+
+model Cheque_Recibido {
+  idCheque        Int       @id(map: "PK_Venta_Cheque") @default(autoincrement())
+  idCliente       Int?
+  Banco           String?   @db.NVarChar(250)
+  nCheque         String?   @db.NVarChar(50)
+  nCuenta         String?   @db.NVarChar(50)
+  cantidad        Decimal?  @db.Decimal(18, 2)
+  titularChequera String?   @db.NVarChar(250)
+  pagaraQuien     String?   @db.NVarChar(250)
+  lugarEmision    String?   @db.NVarChar(250)
+  observacion     String?   @db.NVarChar(250)
+  fechaCobro      DateTime? @db.Date
+  fecha           DateTime? @db.DateTime
+  estado          Boolean?
+}
+
+model Cheque_Recibido_Cobrar {
+  idCheque         Int       @id(map: "PK_Cheque_Recibido_Cobrar")
+  idAsientoDetalle Int?
+  idCuentaBanco    Int?
+  tipoPago         String?   @db.NVarChar(150)
+  cantidad         Decimal?  @db.Decimal(18, 2)
+  comprobante      String?   @db.NVarChar(250)
+  fecha            DateTime? @db.DateTime
+}
+
+model ChequeCInterno {
+  IDChequeComercialInterno Int       @id(map: "PK_ChequeCInterno") @default(autoincrement())
+  IDMovimiento             Int?
+  IDMovimiento2            Int?
+  IdBanco                  Int?
+  NCheque                  String?   @db.NVarChar(Max)
+  Nombres                  String?   @db.NVarChar(Max)
+  Cantidad                 Decimal?  @db.Decimal(10, 2)
+  TipoCheque               String?   @db.NVarChar(Max)
+  FechaCheque              DateTime? @db.Date
+  FechaHora                DateTime? @db.DateTime
+  Estado                   Boolean?
+}
+
+model ChequeComercialAnulado {
+  IDChequeComercialAnulado Int     @id(map: "PK_ChequeComercialAnulado") @default(autoincrement())
+  NCheque                  String? @db.NVarChar(Max)
+  CuentaBanco              String? @db.NVarChar(Max)
+  Nomina                   String? @db.NVarChar(Max)
+  Cantidad                 String? @db.NVarChar(Max)
+  TipoCheque               String? @db.NVarChar(Max)
+  FechaCheque              String? @db.NVarChar(Max)
+  Fecha                    String? @db.NVarChar(Max)
+  Detalle                  String? @db.NVarChar(Max)
+}
+
+model ChequeRecibido {
+  IDCheque            Int       @id(map: "PK_ChequeRecivido") @default(autoincrement())
+  IDMovimientoDetalle Int?
+  NCheque             String?   @db.NVarChar(Max)
+  CuentaBanco         String?   @db.NVarChar(Max)
+  NBanco              String?   @db.NVarChar(Max)
+  Nomina              String?   @db.NVarChar(Max)
+  Cantidad            Decimal?  @db.Decimal(10, 2)
+  TipoCheque          String?   @db.NVarChar(Max)
+  FechaCheque         DateTime? @db.Date
+  FechaHora           DateTime? @db.DateTime
+  Fecha               DateTime? @db.Date
+  Estado              Boolean?
+}
+
+model ChequeRecibidoAnulado {
+  IDChequeAnulado Int     @id(map: "PK_ChequeRecibidoAnulado") @default(autoincrement())
+  NCheque         String? @db.NVarChar(Max)
+  Cuenta          String? @db.NVarChar(Max)
+  Nomina          String? @db.NVarChar(Max)
+  Cantidad        String? @db.NVarChar(Max)
+  TipoCheque      String? @db.NVarChar(Max)
+  Fecha           String? @db.NVarChar(Max)
+  Detalle         String? @db.NVarChar(Max)
+}
+
+model ChequeRecibidoCobradoDetalle {
+  IDChequeRecibidoCobrado Int       @id(map: "PK_ChequeRecibidoCobradoDetalle") @default(autoincrement())
+  IDCheque                Int?
+  IDMovimientoDetalle     Int?
+  Cuenta                  String?   @db.NVarChar(300)
+  Comprobante             String?   @db.NVarChar(200)
+  Deposito                String?   @db.NVarChar(200)
+  Efectivo                String?   @db.NVarChar(200)
+  Fecha                   DateTime? @db.Date
+  FechaHora               DateTime? @db.DateTime
+}
+
+model ChequesComercial {
+  IDCheque              Int       @id(map: "PK_Cheques") @default(autoincrement())
+  IDCuentaContableMenor Int?
+  IDMovimientoDetalle   Int?
+  NCheque               String?   @db.NVarChar(Max)
+  Nombres               String?   @db.NVarChar(Max)
+  Cantidad              Decimal?  @db.Decimal(10, 2)
+  TipoCheque            String?   @db.NVarChar(Max)
+  FechaCheque           DateTime? @db.Date
+  FechaHora             DateTime? @db.DateTime
+  Fecha                 DateTime? @db.Date
+  Estado                Boolean?
+}
+
+model Chofer {
+  IDChofer     Int       @id(map: "PK_Chofer") @default(autoincrement())
+  Nombres      String?   @db.NVarChar(250)
+  CI           String?   @db.NVarChar(15)
+  Telefono     String?   @db.NVarChar(15)
+  FechaCreado  DateTime? @db.DateTime
+  FechaEditado DateTime? @db.DateTime
+  Usuario      String?   @db.NVarChar(50)
+}
+
+model Cierre {
+  IdCierre            Int       @id(map: "PK_Cierre") @default(autoincrement())
+  IdCierre_Automatico Int?
+  IdLocal             Int?
+  IdUser              Int?
+  FechaInicial        DateTime? @db.DateTime
+  Fecha               DateTime? @db.DateTime
+}
+
+model Cierre_Automatico {
+  IdCierre_Automatico Int       @id(map: "PK_Cierre_Automatico") @default(autoincrement())
+  Detalle             String?   @db.Text
+  Estado              Boolean?
+  Fecha               DateTime? @db.DateTime
+}
+
+model Cierre_Borrado_Auditoria {
+  IdCierreBorrado        Int       @id(map: "PK_Cierre_Borrado_Auditoria") @default(autoincrement())
+  IdCierre               Int
+  IdCierre_Automatico    Int?
+  IdLocal                Int
+  IdUserCierre           Int?
+  FechaInicialCierre     DateTime? @db.DateTime
+  FechaCierre            DateTime? @db.DateTime
+  IdUserBorrado          Int
+  FechaBorrado           DateTime  @default(now(), map: "DF_Cierre_Borrado_Auditoria_FechaBorrado") @db.DateTime
+  Motivo                 String    @db.NVarChar(500)
+  BorroCorridaAutomatica Boolean   @default(false, map: "DF_Cierre_Borrado_Auditoria_BorroCorrida")
+  FilasBorradas          Int
+  SnapshotVersion        Int
+  Snapshot               String    @db.NVarChar(Max)
+
+  @@index([IdLocal, FechaBorrado(sort: Desc)], map: "IX_Cierre_Borrado_Auditoria_Local_Fecha")
+}
+
+model Cierre_Producto {
+  IdCierreProducto Int      @id(map: "PK_Cierre_Producto") @default(autoincrement())
+  IdCierre         Int?
+  IDProducto       Int?
+  Cantidad         String?  @db.NVarChar(100)
+  Precio           String?  @db.NVarChar(100)
+  Inversion        String?  @db.NVarChar(100)
+  UtilidadQQ       String?  @db.NVarChar(100)
+  UtilidadTotal    String?  @db.NVarChar(100)
+  PrecioDia        String?  @db.NVarChar(100)
+  Humedad          String?  @db.NVarChar(100)
+  Impureza         String?  @db.NVarChar(100)
+  Automatico       Boolean?
+}
+
+model Cierre_Producto_CompraDia {
+  idCompraDia      Int     @id(map: "PK_Cierre_Producto_CompraDia") @default(autoincrement())
+  IdCierreProducto Int?
+  QqBrutoTotal     String? @db.NVarChar(100)
+  QqNetoTotal      String? @db.NVarChar(100)
+  MermaTotal       String? @db.NVarChar(100)
+  PorcentajeTotal  String? @db.NVarChar(100)
+  HumedadTotal     String? @db.NVarChar(100)
+  ImpurezaTotal    String? @db.NVarChar(100)
+  AnticipoTotal    String? @db.NVarChar(100)
+  ComisionTotal    String? @db.NVarChar(100)
+  EmbodegadoTotal  String? @db.NVarChar(100)
+  EfectivoTotal    String? @db.NVarChar(100)
+  ChequeTotal      String? @db.NVarChar(100)
+  PendienteTotal   String? @db.NVarChar(100)
+  Precio           String? @db.NVarChar(100)
+  PrecioDelDia     String? @db.NVarChar(100)
+  VTotal           String? @db.NVarChar(100)
+  RetencionTotal   String? @db.NVarChar(100)
+}
+
+model Cierre_Producto_Detalle {
+  IdCierreProductoDetalle Int     @id(map: "PK_Cierre_Producto_Detalle") @default(autoincrement())
+  IdCierreProducto        Int?
+  Descripcion             String? @db.NVarChar(150)
+  QqBruto                 String? @db.NVarChar(100)
+  Porcen                  String? @db.NVarChar(100)
+  Merma                   String? @db.NVarChar(100)
+  QqNeto                  String? @db.NVarChar(100)
+  PrecioPromedio          String? @db.NVarChar(100)
+  Efectivo                String? @db.NVarChar(100)
+  Cheque                  String? @db.NVarChar(100)
+  Deposito                String? @db.NVarChar(100)
+  Inversion               String? @db.NVarChar(100)
+}
+
+model Cierre_Producto_Excedente {
+  idCierreProductoExcedente  Int       @id(map: "PK_Cierre_Producto_Excedente") @default(autoincrement())
+  idCierreProducto           Int?
+  StockAnterior              String?   @db.NVarChar(100)
+  StockPrecioAnterior        String?   @db.NVarChar(100)
+  StockInversionAnterior     String?   @db.NVarChar(100)
+  StockUtilidadQQAnterior    String?   @db.NVarChar(100)
+  StockUtilidadTotalAnterior String?   @db.NVarChar(100)
+  StockNuevo                 String?   @db.NVarChar(100)
+  StockPrecioNuevo           String?   @db.NVarChar(100)
+  StockInversionNuevo        String?   @db.NVarChar(100)
+  StockUtilidadQQNuevo       String?   @db.NVarChar(100)
+  StockUtilidadTotalNuevo    String?   @db.NVarChar(100)
+  StockCantidadExcedente     String?   @db.NVarChar(100)
+  StockIPrecioExcedente      String?   @db.NVarChar(100)
+  StockInversionExcedente    String?   @db.NVarChar(100)
+  Fecha                      DateTime? @db.DateTime
+}
+
+model Cierre_Producto_Operacion {
+  IdCierreProductoOperacion Int  @id(map: "PK_Cierre_Producto_Operacion") @default(autoincrement())
+  IdCierreProducto          Int?
+}
+
+model Cierre_Producto_Operacion_Compra_Bascula {
+  IdCPC_Bascula             Int  @id(map: "PK_Cierre_Producto_Compra_Bascula") @default(autoincrement())
+  IdCierreProductoOperacion Int?
+  IdBoletoDetalle           Int?
+}
+
+model Cierre_Producto_Operacion_Compra_General {
+  IdCPC_General             Int  @id(map: "PK_Cierre_Producto_Compra_General") @default(autoincrement())
+  IdCierreProductoOperacion Int?
+  IdBoletoDetalle           Int?
+}
+
+model Cierre_Producto_Operacion_Compra_Romana {
+  IdCPC_Romana              Int  @id(map: "PK_Cierre_Producto_Compra_Romana") @default(autoincrement())
+  IdCierreProductoOperacion Int?
+  IdBoletoDetalle           Int?
+}
+
+model Cierre_Producto_Operacion_Venta_Bascula {
+  IdCPV_Bascula             Int  @id(map: "PK_Cierre_Producto_Venta_Bascula") @default(autoincrement())
+  IdCierreProductoOperacion Int?
+  IdBoletoDetalle           Int?
+}
+
+model Cierre_Producto_Operacion_Venta_Bodeguita {
+  IdCPV_Bodeguita           Int  @id(map: "PK_Cierre_Producto_Venta_Bodeguita") @default(autoincrement())
+  IdCierreProductoOperacion Int?
+  IdBoletoDetalle           Int?
+}
+
+model Cierre_Producto_Operacion_Venta_General {
+  IdCPV_General             Int  @id(map: "PK_Cierre_Producto_Venta_General") @default(autoincrement())
+  IdCierreProductoOperacion Int?
+  IdBoletoDetalle           Int?
+}
+
+model Cierre_Producto_VentaDia {
+  IdVentaDia       Int     @id(map: "PK_Cierre_Producto_VentaDia") @default(autoincrement())
+  IdCierreProducto Int?
+  qqBrutoTotal     String? @db.NVarChar(100)
+  qqNetoTotal      String? @db.NVarChar(100)
+  mermaTotal       String? @db.NVarChar(100)
+  porcentajeTotal  String? @db.NVarChar(100)
+  humedadTotal     String? @db.NVarChar(100)
+  impurezaTotal    String? @db.NVarChar(100)
+  efectivoTotal    String? @db.NVarChar(100)
+  chequeTotal      String? @db.NVarChar(100)
+  transferencia    String? @db.NVarChar(100)
+  pendienteTotal   String? @db.NVarChar(100)
+  precio           String? @db.NVarChar(100)
+  precioDelDia     String? @db.NVarChar(100)
+  vTotalTotal      String? @db.NVarChar(100)
+  retencionTotal   String? @db.NVarChar(100)
+}
+
+model CierreCompraDelDia {
+  IDCompraDia Int      @id(map: "PK_CierreCompraDelDia") @default(autoincrement())
+  IDCierre    Int?
+  IDProducto  Int?
+  PrecioDia   Decimal? @db.Decimal(18, 8)
+  QQ          Decimal? @db.Decimal(18, 8)
+  Precio      Decimal? @db.Decimal(18, 8)
+  Efectivo    Decimal? @db.Decimal(18, 8)
+  Comision    Decimal? @db.Decimal(18, 8)
+  Cheque      Decimal? @db.Decimal(18, 8)
+  Retencion   Decimal? @db.Decimal(18, 8)
+  Pendiente   Decimal? @db.Decimal(18, 8)
+  Inversion   Decimal? @db.Decimal(18, 8)
+  Humedad     Decimal? @db.Decimal(18, 8)
+  Impureza    Decimal? @db.Decimal(18, 8)
+  Embodegado  Decimal? @db.Decimal(18, 8)
+  Anticipo    Decimal? @db.Decimal(18, 8)
+  Merma       Decimal? @db.Decimal(18, 8)
+  Porcentaje  Decimal? @db.Decimal(18, 8)
+  QQBruto     Decimal? @db.Decimal(18, 8)
+}
+
+model CierreFinalSucursales {
+  IDCierreFinalSucursales Int       @id(map: "PK_CierreFinalSucursales") @default(autoincrement())
+  FechaHora               DateTime? @db.DateTime
+  Usuario                 String?   @db.NVarChar(100)
+}
+
+model CierreInventario {
+  IDCierreInventario Int       @id(map: "PK_CierreInventario") @default(autoincrement())
+  IDCierre           Int?
+  IDProducto         Int?
+  FInicial           DateTime? @db.DateTime
+  FFinal             DateTime? @db.DateTime
+  Cantidad           Decimal?  @db.Decimal(18, 8)
+  Precio             Decimal?  @db.Decimal(18, 8)
+  Inversion          Decimal?  @db.Decimal(18, 8)
+  UtilidadQQ         Decimal?  @db.Decimal(18, 8)
+  UtilidadTotal      Decimal?  @db.Decimal(18, 8)
+  Usuario            String?   @db.NVarChar(Max)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CierreInventarioExcedente {
+  IDCierreInventario    Int?
+  IDCierre              Int?
+  IDProducto            Int?
+  CantidadAnterior      Decimal? @db.Decimal(18, 8)
+  PrecioAnterior        Decimal? @db.Decimal(18, 8)
+  InversionAnterior     Decimal? @db.Decimal(18, 8)
+  UtilidadQQAnterior    Decimal? @db.Decimal(18, 8)
+  UtilidadTotalAnterior Decimal? @db.Decimal(18, 8)
+  CantidadNuevo         Decimal? @db.Decimal(18, 8)
+  PrecioNuevo           Decimal? @db.Decimal(18, 8)
+  InversionNuevo        Decimal? @db.Decimal(18, 8)
+  UtilidadQQNuevo       Decimal? @db.Decimal(18, 8)
+  UtilidadTotalNuevo    Decimal? @db.Decimal(18, 8)
+  CantidadExcedente     Decimal? @db.Decimal(18, 8)
+  PrecioExcedente       Decimal? @db.Decimal(18, 8)
+  InversionExcedente    Decimal? @db.Decimal(18, 8)
+  Usuario               String?  @db.NVarChar(Max)
+
+  @@ignore
+}
+
+model CierreInventarioOperaciones {
+  IDInventarioOperaciones Int       @id(map: "PK_CierreInventarioOperaciones") @default(autoincrement())
+  IDCierreInventario      Int?
+  IDProducto              Int?
+  IDEntrada               Int?
+  TransaccionIDEtrada     String?   @db.NVarChar(50)
+  TipoPesaje              String?   @db.NVarChar(50)
+  CompraOVenta            String?   @db.NVarChar(50)
+  Fecha                   DateTime? @db.DateTime
+  Cantidad                Decimal?  @db.Decimal(18, 8)
+  Precio                  Decimal?  @db.Decimal(18, 8)
+  Inversion               Decimal?  @db.Decimal(18, 8)
+  CantidadTotal           Decimal?  @db.Decimal(18, 8)
+  PrecioTotal             Decimal?  @db.Decimal(18, 8)
+  InversionTotal          Decimal?  @db.Decimal(18, 8)
+  UtilidadTotal           Decimal?  @db.Decimal(18, 8)
+  UtilidadQQ              Decimal?  @db.Decimal(18, 8)
+}
+
+model CierreProductoDetalle {
+  IDCierreProductoDetalle Int     @id(map: "PK_CierreProductoDetalle") @default(autoincrement())
+  IDCierre                Int?
+  IDProducto              Int?
+  CProductoDescripcion    String? @db.NVarChar(50)
+  CProductoQQBruto        String? @db.NVarChar(50)
+  CProductoPorcentaje     String? @db.NVarChar(50)
+  CProductoMerma          String? @db.NVarChar(50)
+  CProductoQQNetos        String? @db.NVarChar(50)
+  CProductoPPromedio      String? @db.NVarChar(50)
+  CProductoEfectivo       String? @db.NVarChar(50)
+  CProductoCheque         String? @db.NVarChar(50)
+  CProductoDeposito       String? @db.NVarChar(50)
+  CProductoTotal          String? @db.NVarChar(50)
+  CProductoStock          String? @db.NVarChar(50)
+  CProductoPrecioDia      String? @db.NVarChar(50)
+  CProductoHumedad        String? @db.NVarChar(50)
+  CProductoUtilidad       String? @db.NVarChar(50)
+}
+
+model CierreSucursales {
+  IDCierreSucursales      Int       @id(map: "PK_CierreSucursales") @default(autoincrement())
+  IDCierreFinalSucursales Int?
+  IDLocal                 Int?
+  FechaHora               DateTime? @db.DateTime
+  Usuario                 String?   @db.NVarChar(100)
+  Estado                  Boolean?
+}
+
+model CierreTotal {
+  IDCierre    Int       @id(map: "PK_CierreTotal") @default(autoincrement())
+  IDLocal     Int?
+  FechaCierre DateTime? @db.DateTime
+}
+
+model CierreVentaDelDia {
+  IDVentaDia Int      @id(map: "PK_CierreVentaDelDia") @default(autoincrement())
+  IDCierre   Int?
+  IDProducto Int?
+  QQ         Decimal? @db.Decimal(18, 8)
+  Precio     Decimal? @db.Decimal(18, 8)
+  Efectivo   Decimal? @db.Decimal(18, 8)
+  Deposito   Decimal? @db.Decimal(18, 8)
+  Cheque     Decimal? @db.Decimal(18, 8)
+  Pendiente  Decimal? @db.Decimal(18, 8)
+  Retenci_n  Decimal? @map("Retención") @db.Decimal(18, 8)
+  Total      Decimal? @db.Decimal(18, 8)
+  Merma      Decimal? @db.Decimal(18, 8)
+  Porcentaje Decimal? @db.Decimal(18, 8)
+  QQBruto    Decimal? @db.Decimal(18, 8)
+  Humedad    Decimal? @db.Decimal(18, 8)
+}
+
+model ClaveMaestra {
+  id           Int     @id(map: "PK_ClaveMaestra") @db.TinyInt
+  ClaveMaestra String? @db.NVarChar(Max)
+}
+
+model Cliente {
+  IDCliente      Int       @id(map: "PK_Cliente") @default(autoincrement())
+  Documento      String?   @db.NVarChar(Max)
+  NombreCompleto String?   @db.NVarChar(Max)
+  Direccion      String?   @db.NVarChar(Max)
+  Telefono1      String?   @db.NVarChar(Max)
+  Telefono2      String?   @db.NVarChar(Max)
+  Correo         String?   @db.NVarChar(Max)
+  Notas          String?   @db.Text
+  UrlPicture     String?   @db.NVarChar(150)
+  Image          Bytes?    @db.Image
+  Caducidad      DateTime? @db.Date
+  DateUpdated    DateTime? @db.DateTime
+}
+
+model CobroComprobanteVenta {
+  IDComprobanteVenta   Int       @id(map: "PK_CobroComprobanteVenta") @default(autoincrement())
+  IDBoletoEntradaVenta Int?
+  Factura              String?   @db.NVarChar(Max)
+  Digita               String?   @db.NVarChar(Max)
+  PesoPagar            Decimal?  @db.Decimal(18, 2)
+  Precio               Decimal?  @db.Decimal(18, 8)
+  ValorTotal           Decimal?  @db.Decimal(18, 6)
+  RetencionReal        Decimal?  @db.Decimal(18, 2)
+  Efectivo             Decimal?  @db.Decimal(18, 2)
+  Deposito             Decimal?  @db.Decimal(18, 2)
+  Cheque               Decimal?  @db.Decimal(18, 2)
+  Pendiente            Decimal?  @db.Decimal(18, 2)
+  FechaHoraPago        DateTime? @db.DateTime
+  Fecha                DateTime? @db.Date
+  estado               Boolean?
+  Cheque1              String?   @db.NVarChar(Max)
+  Cheque2              String?   @db.NVarChar(Max)
+  Deposito1            String?   @db.NVarChar(Max)
+  Deposito2            String?   @db.NVarChar(Max)
+}
+
+model CobroEmbodegadoVenta {
+  IDCobroEmbodegadoVenta Int       @id(map: "PK_CobroEmbodegadoVenta") @default(autoincrement())
+  IDVentaEmbodegado      Int?
+  Digita                 String?   @db.NVarChar(Max)
+  PesoPagar              Decimal?  @db.Decimal(18, 2)
+  Precio                 Decimal?  @db.Decimal(18, 2)
+  ValorTotal             Decimal?  @db.Decimal(18, 2)
+  RetencionReal          Decimal?  @db.Decimal(18, 2)
+  Efectivo               Decimal?  @db.Decimal(18, 2)
+  Deposito               Decimal?  @db.Decimal(18, 2)
+  Cheque                 Decimal?  @db.Decimal(18, 2)
+  Pendiente              Decimal?  @db.Decimal(18, 2)
+  FechaHora              DateTime? @db.DateTime
+  Fecha                  DateTime? @db.Date
+}
+
+model ComisionCliente {
+  IDComisionCliente Int     @id(map: "PK_ComisionCliente") @default(autoincrement())
+  Nombres           String? @db.NVarChar(Max)
+  CI                String? @db.NVarChar(Max)
+  Telefono          String? @db.NVarChar(50)
+  Telefono2         String? @db.NVarChar(50)
+  Detalle           String? @db.NVarChar(Max)
+  Direccion         String? @db.NVarChar(Max)
+}
+
+model ComisionCompra {
+  IDComisionCompra  Int       @id(map: "PK_ComisionCompra") @default(autoincrement())
+  IDComisionCliente Int?
+  IDBoletoEntrada   Int?
+  Precio            Decimal?  @db.Decimal(18, 2)
+  PrecioApagar      Decimal?  @db.Decimal(18, 2)
+  FechaHora         DateTime? @db.DateTime
+  Usuario           String?   @db.NVarChar(Max)
+}
+
+model ComisionVenta {
+  IDComisionVenta   Int      @id(map: "PK_ComisionVenta") @default(autoincrement())
+  IDComisionCliente Int?
+  CodSalida         Int?
+  Comprobante       Int?
+  QQ                Decimal? @db.Decimal(18, 2)
+  Precio            Decimal? @db.Decimal(18, 2)
+  PrecioApagar      Decimal? @db.Decimal(18, 2)
+  Producto          String?  @db.NVarChar(Max)
+}
+
+model Compra_Almacenaje {
+  IDAlmacenaje       Int       @id(map: "PK_CompraAlmacenaje") @default(autoincrement())
+  IDBoletoDetalle    Int?
+  IDRomana           Int?
+  IDCompraGeneral    Int?
+  Precio             Decimal?  @db.Decimal(18, 6)
+  ValorTotalComision Decimal?  @db.Decimal(18, 2)
+  ValorTotal         Decimal?  @db.Decimal(18, 2)
+  Humedad            Decimal?  @db.Decimal(18, 2)
+  PrecioDelDia       Decimal?  @db.Decimal(18, 6)
+  Porcentaje         Decimal?  @db.Decimal(18, 6)
+  Merma              Decimal?  @db.Decimal(18, 2)
+  Neto               Decimal?  @db.Decimal(18, 2)
+  Fecha              DateTime? @db.DateTime
+  Fecha_Edit         DateTime? @db.DateTime
+}
+
+model Compra_Banco_Cheila {
+  IdCompraBancoCheque Int       @id(map: "PK_Compra_Banco_Sheila") @default(autoincrement())
+  IdCheque            Int?
+  IdTransfer          Int?
+  Fecha               DateTime? @db.DateTime
+}
+
+model Compra_Cheque {
+  IDCheque              Int       @id(map: "PK_Compra_Cheque") @default(autoincrement())
+  IdCTransaccionDetalle Int?
+  idAsientoDetalle      Int?
+  IDBanco               Int?
+  idCliente             Int?
+  NCheque               String?   @db.NVarChar(30)
+  Nombres               String?   @db.NVarChar(Max)
+  Cantidad              Decimal?  @db.Decimal(18, 2)
+  PagoMaximo            String?   @db.NVarChar(50)
+  TipoCheque            String?   @db.NVarChar(50)
+  FechaCheque           DateTime? @db.Date
+  Fecha                 DateTime? @db.DateTime
+  estado                Boolean?
+}
+
+model Compra_Comision_Cliente {
+  IDComisionCliente Int     @id(map: "PK_Compra_Comision_Cliente") @default(autoincrement())
+  IdCliente         Int?
+  Nombres           String? @db.NVarChar(Max)
+  CI                String? @db.NVarChar(Max)
+  Telefono          String? @db.NVarChar(50)
+  Telefono2         String? @db.NVarChar(50)
+  Detalle           String? @db.NVarChar(Max)
+  Direccion         String? @db.NVarChar(Max)
+}
+
+model Compra_Comision_Liquidacion {
+  IDComisionCompra  Int       @id(map: "PK_Compra_Comision_Liquidacion") @default(autoincrement())
+  IDComisionCliente Int?
+  IDBoletoDetalle   Int?
+  IdUsuario         Int?
+  IdCliente         Int?
+  Precio            Decimal?  @db.Decimal(18, 2)
+  VaPagar           Decimal?  @db.Decimal(18, 2)
+  FechaHora         DateTime? @db.DateTime
+}
+
+model Compra_Debito {
+  id       Int       @id(map: "PK_Compra_Debito") @default(autoincrement())
+  idBanco  Int?
+  nDebito  String?   @db.NVarChar(50)
+  detalle  String?   @db.NVarChar(250)
+  cantidad Decimal?  @db.Decimal(18, 2)
+  fecha    DateTime? @db.DateTime
+}
+
+model Compra_Liquidacion {
+  IDBoletoDetalle Int       @id(map: "PK_CompraComprobante")
+  IDUser          Int?
+  PesoNeto        Decimal?  @db.Decimal(18, 2)
+  ValorPagar      Decimal?  @db.Decimal(18, 2)
+  Precio          Decimal?  @db.Decimal(18, 6)
+  Retencion       Decimal?  @db.Decimal(18, 2)
+  ValorTotal      Decimal?  @db.Decimal(18, 2)
+  Fecha           DateTime? @db.DateTime
+  Fecha_Edit      DateTime? @db.DateTime
+}
+
+model Compra_Liquidacion_Cheque_ID {
+  IDBoletoDetalle Int  @id(map: "PK_Compra_Liquidacion_Cheque_ID")
+  idCheque        Int?
+  idCheque2       Int?
+  idTranferencia  Int?
+}
+
+model Compra_Liquidacion_Comprobante {
+  IDBoletoDetalle   Int     @id(map: "PK_CompraComprobanteTipo")
+  IDTipoComprobante Int?
+  CodComprobante    String? @db.NVarChar(15)
+}
+
+model Compra_Liquidacion_Retencion {
+  IDBoletoDetalle      Int      @id(map: "PK_CompraRetencion")
+  IdRetencion          Int?
+  RetencionEstablecida Decimal? @db.Decimal(18, 3)
+}
+
+model Compra_Liquidacion_SustentoTributario {
+  IDBoletoDetalle   Int     @id(map: "PK_CompraSustentoTributario")
+  IDTipoSTributario Int?
+  CodSTributario    String? @db.NVarChar(15)
+}
+
+model Compra_Tipo_Comprobante {
+  IDTipoComprobante Int     @id(map: "PK_CompraTipoComprobante") @default(autoincrement())
+  Codigo            Int?
+  Descripcion       String? @db.NVarChar(250)
+}
+
+model Compra_Tipo_SustentoTributario {
+  IDTipoSTributario Int     @id(map: "PK_CompraSustentoTributarioTipo") @default(autoincrement())
+  Codigo            Int?
+  Descripcion       String? @db.NVarChar(250)
+}
+
+model Compra_Transaccion_Detalle {
+  IdCTransaccionDetalle Int       @id(map: "PK_CompraTransaccionDetalle") @default(autoincrement())
+  IdUser                Int?
+  Fecha                 DateTime? @db.DateTime
+  Multiple              Boolean?
+
+  @@index([Fecha], map: "IX_Compra_Transaccion_Detalle")
+}
+
+model Compra_Transaccion_Item {
+  IdCTransaccionItem    Int      @id(map: "PK_CompraTransaccionItem") @default(autoincrement())
+  IdCTransaccionDetalle Int?
+  PagoPendiente         Boolean?
+}
+
+model Compra_Transaccion_Pago_Cheque {
+  IdCompraPagoCheque    Int      @id(map: "PK_CompraPago") @default(autoincrement())
+  IdCTransaccionDetalle Int?
+  IdBoletoDetalle       Int?
+  IdCTransaccionItem    Int?
+  IdCheque              Int?
+  CantidadParcial       Decimal? @db.Decimal(18, 2)
+  Cantidad              Decimal? @db.Decimal(18, 2)
+  Anticipo              Boolean?
+}
+
+model Compra_Transaccion_Pago_Efectivo {
+  IdCompraPagoEfectivo  Int      @id(map: "PK_CompraPagoEfectivo") @default(autoincrement())
+  IdCTransaccionDetalle Int?
+  IdBoletoDetalle       Int?
+  IdCTransaccionItem    Int?
+  CantidadParcial       Decimal? @db.Decimal(18, 2)
+  Cantidad              Decimal? @db.Decimal(18, 2)
+  Anticipo              Boolean?
+}
+
+model Compra_Transaccion_Pago_Transferencia {
+  IdCompraPagoTransferencia Int      @id(map: "PK_CompraPagoTransferencia") @default(autoincrement())
+  IdCTransaccionDetalle     Int?
+  IdBoletoDetalle           Int?
+  IdCTransaccionItem        Int?
+  idTransferencia           Int?
+  CantidadParcial           Decimal? @db.Decimal(18, 2)
+  Cantidad                  Decimal? @db.Decimal(18, 2)
+  Anticipo                  Boolean?
+}
+
+model Compra_Transfer {
+  idTranfer             Int       @id(map: "PK_Compra_Transfer") @default(autoincrement())
+  IdCTransaccionDetalle Int?
+  idBanco               Int?
+  idCliente             Int?
+  nTransfer             String?   @db.NVarChar(250)
+  detalle               String?   @db.NVarChar(250)
+  PagoMaximo            String?   @db.NVarChar(50)
+  cantidad              Decimal?  @db.Decimal(18, 2)
+  fechaTransfer         DateTime? @db.Date
+  fecha                 DateTime? @db.DateTime
+}
+
+model CompraBoletoDetalle {
+  IDBoletoDetalle Int      @id(map: "PK_CompraBoletoDetalle") @default(autoincrement())
+  IDLocal         Int?
+  IDCliente       Int?
+  IDProducto      Int?
+  IDZona          Int?
+  IDBascula       Int?
+  Codigo          Int?
+  CodDia          Int?
+  Muestra         Int?
+  Placa           String?  @db.NVarChar(20)
+  Humedad         Decimal? @db.Decimal(18, 2)
+  Impureza        Decimal? @db.Decimal(18, 2)
+  Precio          Decimal? @db.Decimal(18, 2)
+  PesoSaco        Int?
+  PesoQQNeto      Decimal? @db.Decimal(18, 2)
+}
+
+model CompraBoletoEntrada {
+  IDBoletoDetalle Int       @id(map: "PK_CompraBoletoEntrada_1")
+  IDUser          Int?
+  PesoEntradaKG   Int?
+  Fecha           DateTime? @db.DateTime
+  UrlPicture      String?   @db.NVarChar(150)
+}
+
+model CompraBoletoSalida {
+  IDBoletoDetalle Int       @id(map: "PK_CompraBoletoSalida")
+  IDUser          Int?
+  PesoSalidaKG    Int?
+  PictureOut      Bytes?    @db.Image
+  Fecha           DateTime? @db.DateTime
+  UrlPicture      String?   @db.NVarChar(150)
+}
+
+model CompraGeneral {
+  IDCompraGeneral Int       @id(map: "PK_CompraGeneral") @default(autoincrement())
+  IDCliente       Int?
+  IDProducto      Int?
+  IDZona          Int?
+  Comprobante     String?   @db.NVarChar(50)
+  Placa           String?   @db.NVarChar(50)
+  Humedad         Decimal?  @db.Decimal(18, 2)
+  Impureza        Decimal?  @db.Decimal(18, 2)
+  Precio          Decimal?  @db.Decimal(18, 8)
+  Quintales       Decimal?  @db.Decimal(18, 8)
+  VAPagar         Decimal?  @db.Decimal(18, 8)
+  Efectivo        Decimal?  @db.Decimal(18, 8)
+  Cheque          Decimal?  @db.Decimal(18, 8)
+  Retencion       Decimal?  @db.Decimal(18, 8)
+  Fecha           DateTime? @db.Date
+  FechaHora       DateTime? @db.DateTime
+}
+
+model ComprobanteCaja {
+  IDCCaja             Int       @id(map: "PK_ComprobanteCaja") @default(autoincrement())
+  IDLocal             Int?
+  IDMovimientoDetalle String?   @db.NVarChar(50)
+  CCaja               Decimal?  @db.Decimal(18, 2)
+  Detalle             String?   @db.NVarChar(Max)
+  Fecha               DateTime? @db.Date
+  Estado              Boolean?
+}
+
+model ComprobanteDeposito {
+  IDComprobanteDeposito Int       @id(map: "PK_ComprobanteDeposito") @default(autoincrement())
+  IDMovimientoDetalle   Int?
+  IDBoletoEntrada       String?   @db.NVarChar(50)
+  NombreBanco           String?   @db.NVarChar(Max)
+  CuentaBanco           String?   @db.NVarChar(Max)
+  Comprobante           String?   @db.NVarChar(Max)
+  Monto                 Decimal?  @db.Decimal(18, 2)
+  Fecha                 DateTime? @db.DateTime
+}
+
+model ComprobanteDepositoVenta {
+  IDComprobanteDepositoVenta Int       @id(map: "PK_ComprobanteDepositoVenta") @default(autoincrement())
+  IDLocal                    Int?
+  IDCuentaContableMenor      Int?
+  IDMovimientoDetalle        Int?
+  IDBoletoEntradaVenta       String?   @db.NVarChar(50)
+  IDCredito                  String?   @db.NVarChar(50)
+  IDCheque                   String?   @db.NVarChar(50)
+  ComprobanteBanco           String?   @db.NVarChar(Max)
+  Cantidad                   Decimal?  @db.Decimal(10, 2)
+  FechaHora                  DateTime? @db.DateTime
+}
+
+model Conta {
+  idCuenta Int     @id(map: "PK_Conta")
+  nombre   String? @db.NVarChar(150)
+}
+
+model Conta_Anticipo_Empleado {
+  idConta_Anticipo Int       @id(map: "PK_Conta_Anticipo_Empleado") @default(autoincrement())
+  IdTipoAnticipo   Int?
+  idLocal          Int?
+  idUser           Int?
+  idEmpleado       Int?
+  comprobante      String?   @db.NVarChar(50)
+  debe             Decimal?  @db.Decimal(18, 2)
+  haber            Decimal?  @db.Decimal(18, 2)
+  Fecha            DateTime? @db.DateTime
+}
+
+model Conta_Anticipo_Mayorista {
+  IdConta_Anticipo_Mayorista Int       @id(map: "PK_Conta_Anticipo_Mayorista") @default(autoincrement())
+  IdLocal                    Int?
+  IdUser                     Int?
+  IdCliente                  Int?
+  Comprobante                String?   @db.NVarChar(50)
+  Debe                       Decimal?  @db.Decimal(18, 2)
+  Haber                      Decimal?  @db.Decimal(18, 2)
+  Fecha                      DateTime? @db.DateTime
+}
+
+model Conta_Asiento_Cuenta {
+  idAsientoCuenta  Int      @id(map: "PK_Conta_Asiento_Cuenta") @default(autoincrement())
+  idAsientoDetalle Int?
+  idContaCuenta    Int?
+  Comprobante      String?  @db.NVarChar(150)
+  Concepto         String?  @db.NVarChar(250)
+  Debe             Decimal? @db.Decimal(18, 2)
+  Haber            Decimal? @db.Decimal(18, 2)
+  Image            Bytes?   @db.Image
+  UrlPicture       String?  @db.NVarChar(150)
+
+  @@index([idAsientoDetalle], map: "IX_Conta_Asiento_Cuenta")
+}
+
+model Conta_Asiento_Cuenta_Backup_Cheque4217 {
+  idAsientoCuenta Int       @id(map: "PK__Conta_As__69B21C7710325BB9")
+  Comprobante     String?   @db.NVarChar(150)
+  FechaRespaldo   DateTime? @default(now(), map: "DF__Conta_Asi__Fecha__60BD35FF") @db.DateTime
+}
+
+model Conta_Asiento_Detalle {
+  idAsientoDetalle         Int       @id(map: "PK_Conta_Asiento_Detalle") @default(autoincrement())
+  idCliente                Int?
+  idAsientoTipoComprobante Int?
+  IdUser                   Int?
+  idLocal                  Int?
+  NComprobante             String?   @db.NVarChar(50)
+  DocReferencia            String?   @db.NVarChar(250)
+  ConceptoGeneral          String?   @db.NVarChar(250)
+  Fecha                    DateTime? @db.DateTime
+  TipoAsiento              Boolean?
+
+  @@index([Fecha], map: "NonClusteredIndex-20240128-231214")
+}
+
+model Conta_Asiento_Detalle_Anticipo {
+  idAsientoDetalleAnticipo Int  @id(map: "PK_Conta_Asiento_Detalle_Anticipo") @default(autoincrement())
+  idAsientoDetalle         Int?
+  idConta_Anticipo         Int?
+}
+
+model Conta_Asiento_Detalle_Anticipo_Mayorista {
+  IdAsientoDetalleAnticipoMayorista Int  @id(map: "PK_Conta_Asiento_Detalle_Anticipo_Mayorista") @default(autoincrement())
+  IdAsientoDetalle                  Int?
+  IdConta_Anticipo_Mayorista        Int?
+}
+
+model Conta_Asiento_Detalle_Cheque_Cobrado {
+  idAsientoDetalle_ChequeCobrado Int  @id(map: "PK_Conta_Asiento_Detalle_Cheque_Cobrado") @default(autoincrement())
+  idAsientoDetalle               Int?
+  idChequeCobrado                Int?
+}
+
+model Conta_Asiento_Detalle_Cheque_Liquidacion {
+  idAsientoDetalle_ChequeLiquidacion Int  @id(map: "PK_Conta_Asiento_Detalle_Cheque_Liquidacion") @default(autoincrement())
+  idAsientoDetalle                   Int?
+  idBancoChequeLiquidacion           Int?
+}
+
+model Conta_Asiento_Detalle_Compra {
+  idAsientoDetalleCompra Int  @id(map: "PK_Conta_Asiento_Detalle_Compra") @default(autoincrement())
+  idAsientoDetalle       Int?
+  IdCTransaccionDetalle  Int?
+  idBoletoDetalle        Int?
+}
+
+model Conta_Asiento_Detalle_Compra_Comision {
+  idAsientoDetalleCompraComision Int  @id(map: "PK_Conta_Asiento_Detalle_Compra_Comision") @default(autoincrement())
+  idAsientoDetalle               Int?
+  idComisionCompra               Int?
+}
+
+model Conta_Asiento_Detalle_Compra_Romana {
+  idAsientoDetalleCompraRomana Int  @id(map: "PK_Conta_Asiento_Detalle_Compra_Romana") @default(autoincrement())
+  idAsientDetalle              Int?
+  idRomana                     Int
+}
+
+model Conta_Asiento_Detalle_CompraGasto {
+  idAsientoDetalleCompraGasto Int  @id(map: "PK_Conta_Asiento_Detalle_CompraGasto") @default(autoincrement())
+  idAsientoDetalle            Int?
+  id_Factura_Detalle          Int?
+}
+
+model Conta_Asiento_Detalle_CostoVenta {
+  idAsientoDetalleCostoVenta Int  @id(map: "PK_Conta_Asiento_Detalle_CostoVenta") @default(autoincrement())
+  idAsientoDetalle           Int?
+  idCierre                   Int?
+}
+
+model Conta_Asiento_Detalle_Deuda {
+  idAsientoDetalle Int @id(map: "PK_Conta_Asiento_Detalle_Deudas")
+}
+
+model Conta_Asiento_Detalle_Ingresos {
+  idAsientoDetalle Int       @id(map: "PK_Conta_Asiento_Detalle_Ingresos")
+  IdCliente        Int?
+  IdCuenta         Int?
+  Ingreso          Decimal?  @db.Decimal(18, 2)
+  Date             DateTime? @db.DateTime
+}
+
+model Conta_Asiento_Detalle_OtroNegocio {
+  idAsientoDetalleOtroNegocio Int  @id(map: "PK_Conta_Asiento_Detalle_OtroNegocio") @default(autoincrement())
+  idAsientoDetalle            Int?
+  idOtroNegocioCentral        Int?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Conta_Asiento_Detalle_Tipo {
+  idAsientoDetalle      Int?
+  Conta_Asiento_Tipo_Id Int?
+
+  @@ignore
+}
+
+model Conta_Asiento_Detalle_Venta {
+  idAsientoDetalleVenta Int  @id(map: "PK_Conta_Asiento_Detalle_Venta") @default(autoincrement())
+  idAsientoDetalle      Int?
+  idADVTipo             Int?
+  idBoletoDetalle       Int?
+}
+
+model Conta_Asiento_Detalle_Venta_Adelantada {
+  idAsientoDetalleVenta_Adelantada Int  @id(map: "PK_Conta_Asiento_Detalle_Venta_Adelantada") @default(autoincrement())
+  idAsientoDetalle                 Int?
+  idPagoAdelantado                 Int?
+}
+
+model Conta_Asiento_Detalle_Venta_Bodeguita {
+  idAsientoDetalleVenta_Bodeguita Int  @id(map: "PK_Conta_Asiento_Detalle_Venta_Bodeguita") @default(autoincrement())
+  idAsientoDetalle                Int?
+  idVentaBodeguita                Int?
+}
+
+model Conta_Asiento_Detalle_Venta_Retencion {
+  idAsientoDetalleVenta_Retencion Int  @id(map: "PK_Conta_Asiento_Detalle_Venta_Retencion") @default(autoincrement())
+  idAsientoDetalle                Int?
+  idBoletoDetalle                 Int?
+}
+
+model Conta_Asiento_Detalle_Venta_Tipo {
+  idADVTipo   Int     @id(map: "PK_Conta_Asiento_Detalle_Venta_Tipo") @default(autoincrement())
+  Descripcion String? @db.NVarChar(100)
+}
+
+model Conta_Asiento_Tipo {
+  Id   Int     @id(map: "PK_Conta_Asiento_Tipo")
+  Name String? @db.NVarChar(250)
+}
+
+model Conta_Asiento_Tipo_Comprobante {
+  idAsientoTipoComprobante Int     @id(map: "PK_Conta_Asiento_Tipo_Comprobante")
+  NombreComp               String? @db.NVarChar(150)
+}
+
+model Conta_Banco_Cheque_Liquidacion {
+  idBancoChequeLiquidacion Int       @id(map: "PK_Conta_Banco_Cheque_Liquidacion") @default(autoincrement())
+  idLocal                  Int?
+  idUser                   Int?
+  idCheque                 Int?
+  fecha                    DateTime? @db.DateTime
+}
+
+model Conta_Banco_Iterbancaria {
+  idInterbancoTransfer Int       @id(map: "PK_Conta_Banco_Iterbancaria") @default(autoincrement())
+  idAsientoDetalle     Int?
+  idAsientoCuenta1     Int?
+  idAsientoCuenta2     Int?
+  comprobante1         String?   @db.NVarChar(250)
+  comprobante2         String?   @db.NVarChar(250)
+  fecha                DateTime? @db.DateTime
+  FechaUpdated         DateTime? @db.DateTime
+}
+
+model Conta_Banco_Recaudacion {
+  id                      Int      @id(map: "PK_Conta_Banco_Recaudacion") @default(autoincrement())
+  idAsientoDetalle        Int?
+  idTransferenciaRecibida Int?
+  idDepositoRecibido      Int?
+  comprobante             String?  @db.NVarChar(250)
+  debe                    Decimal? @db.Decimal(18, 2)
+  haber                   Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_Cheque_Caja_Liquidacion_Modificar {
+  idConta_Banco_Cheque_Liquidacion_Modificar Int      @id(map: "PK_Conta_Banco_Cheque_Liquidacion_Modificar")
+  precio                                     Decimal? @db.Decimal(18, 6)
+  retencion                                  Int?
+  rCantidad                                  Int?
+}
+
+model Conta_Cheque_Caja_Liquidar_Detalle {
+  idChequeCajaLiquidar Int      @id(map: "PK_Conta_Cheque_Caja_Liquidar_Detalle")
+  Qq                   Decimal? @db.Decimal(18, 2)
+  precio               Decimal? @db.Decimal(18, 5)
+  total                Decimal? @db.Decimal(18, 2)
+  reten                Decimal? @db.Decimal(18, 2)
+  ciudad               String?  @db.NVarChar(250)
+  alasuma              String?  @db.NVarChar(250)
+}
+
+model Conta_Cheque_Emitidos_Anulado {
+  idChequeAnulado Int       @id(map: "PK_Conta_Cheque_Emitidos_Anulado") @default(autoincrement())
+  idCheque        Int?
+  idMovimiento    Int?
+  idLocal         Int?
+  cantidad        Decimal?  @db.Decimal(18, 2)
+  fecha           DateTime? @db.DateTime
+  roto            Boolean?
+}
+
+model Conta_ChequeCajaLiquidar {
+  idChequeCajaLiquidar Int       @id(map: "PK_Conta_ChequeCajaLiquidar") @default(autoincrement())
+  idCheque             Int?
+  idLocal              Int?
+  idMovimiento         Int?
+  debe                 Decimal?  @db.Decimal(18, 2)
+  haber                Decimal?  @db.Decimal(18, 2)
+  fecha                DateTime? @db.DateTime
+  estadoCreaCheque     Boolean?
+}
+
+model Conta_Cierre_Caja {
+  IdCierre         Int       @id(map: "PK_Conta_Cierre_Caja") @default(autoincrement())
+  IdCierreProducto Int?
+  IdLocal          Int?
+  IdUser           Int?
+  saldoAnterior    Decimal?  @db.Decimal(18, 2)
+  saldoNuevo       Decimal?  @db.Decimal(18, 2)
+  fechaInicial     DateTime? @db.DateTime
+  fechaFinal       DateTime? @db.DateTime
+}
+
+model Conta_Cierre_Caja_Detalle {
+  idConta_Cierre_Detalle Int      @id(map: "PK_Conta_Cierre_Caja_Detalle") @default(autoincrement())
+  idCierre               Int?
+  idTipoCuenta           Int?
+  cuenta                 String?  @db.NVarChar(250)
+  qq                     String?  @db.NVarChar(40)
+  precio                 String?  @db.NVarChar(40)
+  saldo                  Decimal? @db.Decimal(18, 2)
+  totalCuentas           String?  @db.NVarChar(40)
+  colorEsfero            Boolean?
+  colorCasilla           Boolean?
+  negrilla               Boolean?
+}
+
+model Conta_Cierre_Caja_Detalle_Total {
+  idConta_Cierre_Detalle_Total Int      @id(map: "PK_Conta_Cierre_Caja_Detalle_Total") @default(autoincrement())
+  idCierre                     Int?
+  saldoAnterior                Decimal? @db.Decimal(18, 2)
+  saldoIngreso                 Decimal? @db.Decimal(18, 2)
+  saldoEgreso                  Decimal? @db.Decimal(18, 2)
+  saldoActual                  Decimal? @db.Decimal(18, 2)
+  utilidadBruto                Decimal? @db.Decimal(18, 2)
+  diferencia                   Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_Cuenta {
+  idContaCuenta            Int      @id(map: "PK_Conta_Cuenta") @default(autoincrement())
+  idCuenta                 Int?
+  idCuentaTipo             Int?
+  idLocal                  Int?
+  idContaCuentaActividades Int?
+  codigo                   String   @db.NVarChar(20)
+  nombre                   String?  @db.NVarChar(150)
+  detalle                  String?  @db.NVarChar(250)
+  estado                   Boolean?
+}
+
+model Conta_Cuenta_Actividades {
+  id   Int     @id(map: "PK_Conta_Cuenta_Actividades")
+  name String? @db.NVarChar(250)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Conta_Cuenta_Banco_Enlace {
+  idBanco       Int
+  idContaCuenta Int?
+
+  @@ignore
+}
+
+model Conta_Cuenta_Ingresos {
+  id     Int      @id(map: "PK_Conta_Cuenta_Ingresos_1")
+  Estado Boolean?
+}
+
+model Conta_Cuenta_Ingresos_Venta {
+  id     Int      @id(map: "PK_Conta_Cuenta_Ingresos_Venta")
+  Estado Boolean?
+}
+
+model Conta_Cuenta_Otros_Ingresos {
+  Id Int @id(map: "PK_Conta_Cuenta_Ingresos")
+}
+
+model Conta_Cuenta_Tipo {
+  idCuentaTipo Int     @id(map: "PK_Conta_Cuenta_Tipo") @default(autoincrement())
+  detalle      String? @db.NVarChar(250)
+}
+
+model Conta_Deposito_Confirmar {
+  idConta_Deposito_Confirmar Int       @id(map: "PK_Conta_Deposito_Confirmar") @default(autoincrement())
+  idMovimiento               Int?
+  idUser                     Int?
+  idBanco                    Int?
+  comprobante                String?   @db.NVarChar(50)
+  debe                       Decimal?  @db.Decimal(18, 2)
+  haber                      Decimal?  @db.Decimal(18, 2)
+  fecha                      DateTime? @db.DateTime
+}
+
+model Conta_Gasto_Cuenta_Producto {
+  id_Gasto_CuentaProducto Int      @id(map: "PK_Conta_Gasto_Cuenta_Producto") @default(autoincrement())
+  idContaCuenta           Int?
+  idLocal                 Int?
+  codigo                  String?  @db.NVarChar(50)
+  nombre                  String?  @db.NVarChar(250)
+  estado                  Boolean?
+}
+
+model Conta_Gasto_Factura_Detalle {
+  id_Factura_Detalle Int       @id(map: "PK_Conta_Gasto_Factura_Detalle") @default(autoincrement())
+  idLocal            Int?
+  idUser             Int?
+  idTipoComprobante  Int?
+  idTipoSustento     Int?
+  id_Gasto_Proveedor Int?
+  IdContaGastoTipo   Int?
+  comprobante        String?   @db.NVarChar(250)
+  subTotalSinIva     Decimal?  @db.Decimal(18, 2)
+  subTotalConIva     Decimal?  @db.Decimal(18, 2)
+  subTotalTotal      Decimal?  @db.Decimal(18, 2)
+  Iva                Decimal?  @db.Decimal(18, 2)
+  total              Decimal?  @db.Decimal(18, 2)
+  fecha              DateTime? @db.DateTime
+  fechaAutomatico    DateTime? @db.DateTime
+  pendiente          Boolean?
+}
+
+model Conta_Gasto_Factura_Item {
+  id_Factura_Detalle_Item Int      @id(map: "PK_Conta_Gasto_Factura_Item") @default(autoincrement())
+  id_Factura_Detalle      Int?
+  id_Gasto_CuentaProducto Int?
+  cantidad                Decimal? @db.Decimal(18, 2)
+  retencion               Decimal? @db.Decimal(18, 2)
+  total                   Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_Gasto_Factura_Pago {
+  id_Factura_Detalle_Pago Int      @id(map: "PK_Conta_Gasto_Factura_Pago") @default(autoincrement())
+  id_Factura_Detalle      Int?
+  idCheque                Int?
+  idTransfer              Int?
+  idDebito                Int?
+  efectivo                Decimal? @db.Decimal(18, 2)
+  Cheque                  Decimal? @db.Decimal(18, 2)
+  transfer                Decimal? @db.Decimal(18, 2)
+  Debito                  Decimal? @db.Decimal(18, 2)
+  pendiente               Decimal? @db.Decimal(18, 2)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Conta_Gasto_Factura_Pasivo {
+  id_Factura_Detalle Int
+  idAsientoDetalle   Int?
+  idLocal            Int?
+  idUser             Int?
+  idCheque           Int?
+  idTransfer         Int?
+  EntraPasivo        Decimal?  @db.Decimal(18, 2)
+  PagaPasivo         Decimal?  @db.Decimal(18, 2)
+  fecha              DateTime? @db.DateTime
+
+  @@ignore
+}
+
+model Conta_Gasto_Proveedor {
+  id_Gasto_Proveedor Int     @id(map: "PK_Conta_Gasto_Proveedor") @default(autoincrement())
+  ruc                String? @db.NVarChar(50)
+  cliente            String? @db.NVarChar(250)
+  direccion          String? @db.NVarChar(350)
+  telefono           String? @db.NVarChar(15)
+  telefono2          String? @db.NVarChar(15)
+}
+
+model Conta_Gasto_Tipo {
+  IdContaGastoTipo Int     @id(map: "PK_Conta_Gasto_Tipo")
+  Nombre           String? @db.NVarChar(250)
+}
+
+model Conta_Gasto_Tipo_Comprobante {
+  idTipoComprobante Int      @id(map: "PK_Conta_Gasto_Tipo_Comprobante") @default(autoincrement())
+  nombre            String?  @db.NVarChar(250)
+  estado            Boolean?
+}
+
+model Conta_Gasto_Tipo_Sustento {
+  idTipoSustento Int     @id(map: "PK_Conta_Gasto_Tipo_Sustento") @default(autoincrement())
+  nombre         String? @db.NVarChar(250)
+}
+
+model Conta_OtroNegocio_Central {
+  idOtroNegocioCentral Int       @id(map: "PK_OtroNegocio_Central") @default(autoincrement())
+  idEntraSale          Int?
+  idLocal              Int?
+  idUser               Int?
+  idProveedor          Int?
+  idProducto           Int?
+  comprobante          String?   @db.NVarChar(50)
+  metodoPago           String?   @db.NVarChar(50)
+  entra                Decimal?  @db.Decimal(18, 2)
+  sale                 Decimal?  @db.Decimal(18, 2)
+  fecha                DateTime? @db.DateTime
+}
+
+model Conta_OtroNegocio_Cuenta_Producto {
+  id_OtroNegocio_Cuenta_Producto Int     @id(map: "PK_Conta_OtroNegocio_Cuenta_Producto") @default(autoincrement())
+  idConta_Cuenta                 Int?
+  idLocal                        Int?
+  codigo                         String? @db.NVarChar(50)
+  nombre                         String? @db.NVarChar(50)
+}
+
+model Conta_OtroNegocio_Menu {
+  idEntraSale Int     @id(map: "PK_OtroNegocio_Menu") @default(autoincrement())
+  nombre      String? @db.NVarChar(50)
+}
+
+model Conta_OtroNegocio_PagoEntra_Cheque {
+  id                   Int  @id(map: "PK_Conta_OtroNegocio_PagoEntra_Cheque") @default(autoincrement())
+  idOtroNegocioCentral Int?
+  idChequeRecibido     Int?
+}
+
+model Conta_OtroNegocio_PagoEntra_Deposito {
+  idOtroNegocio_EntraDeposito Int       @id(map: "PK_OtroNegocio_PagoEntra_Deposito") @default(autoincrement())
+  idOtroNegocioCentral        Int?
+  idBanco                     Int?
+  cantidad                    Decimal?  @db.Decimal(18, 2)
+  nDocumento                  String?   @db.NVarChar(50)
+  nota                        String?   @db.NVarChar(250)
+  postFecha                   DateTime? @db.Date
+  fecha                       DateTime? @db.DateTime
+}
+
+model Conta_OtroNegocio_PagoEntra_Efectivo {
+  idOtroNegocio_EntraEfectivo Int      @id(map: "PK_OtroNegocio_PagoEntra_Efectivo") @default(autoincrement())
+  idOtroNegocioCentral        Int?
+  cantidad                    Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_OtroNegocio_PagoEntra_Transfer {
+  idOtroNegocio_EntraTransfer Int       @id(map: "PK_OtroNegocio_PagoEntra_Transfer") @default(autoincrement())
+  idOtroNegocioCentral        Int?
+  idBanco                     Int?
+  idTranfer                   Int?
+  cantidad                    Decimal?  @db.Decimal(18, 2)
+  nDocumento                  String?   @db.NVarChar(50)
+  nota                        String?   @db.NVarChar(250)
+  postFecha                   DateTime? @db.Date
+  fecha                       DateTime? @db.DateTime
+}
+
+model Conta_OtroNegocio_PagoSale_Cheque {
+  idOtroNegocio_SaleCheque Int      @id(map: "PK_OtroNegocio_PagoSale_Cheque") @default(autoincrement())
+  idOtroNegocioCentral     Int?
+  idCheque                 Int?
+  cantidad                 Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_OtroNegocio_PagoSale_Efectivo {
+  idOtroNegocio_SaleEfectivo Int      @id(map: "PK_OtroNegocio_PagoSale_Efectivo") @default(autoincrement())
+  idOtroNegocioCentral       Int?
+  cantidad                   Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_OtroNegocio_PagoSale_Transferencia {
+  idOtroNegocio_SaleTransferencia Int      @id(map: "PK_Conta_OtroNegocio_PagoSale_Transferencia") @default(autoincrement())
+  idOtroNegocioCentral            Int?
+  idTransfer                      Int?
+  cantidad                        Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_Pendiente_Liquidar {
+  idConta_Pendiente_Liquidar Int       @id(map: "PK_Conta_Pendiente_Liquidar") @default(autoincrement())
+  idMovimiento               Int?
+  idLocal                    Int?
+  idUser                     Int?
+  idEmpleado                 Int?
+  comprobante                String?   @db.NVarChar(50)
+  debe                       Decimal?  @db.Decimal(18, 2)
+  haber                      Decimal?  @db.Decimal(18, 2)
+  fecha                      DateTime? @db.DateTime
+}
+
+model Conta_Retencion {
+  IDRetencion     Int      @id(map: "PK_Conta_Rentencion") @default(autoincrement())
+  IDTipoRetencion Int?
+  Codigo          String?  @db.NVarChar(50)
+  CodReferencia   String?  @db.NVarChar(10)
+  Descripcion     String?  @db.NVarChar(150)
+  Porcen          Decimal? @db.Decimal(18, 2)
+}
+
+model Conta_TipoRetencion {
+  IDTipoRetencion Int     @id(map: "PK_Conta_TipoRetencion") @default(autoincrement())
+  Descripcion     String? @db.NVarChar(250)
+}
+
+model Control_Pesaje_Conductor {
+  id        Int      @id(map: "PK_Control_Pesaje_Conductor") @default(autoincrement())
+  idCliente Int?     @unique(map: "UX_Control_Pesaje_Conductor_IdCliente", where: raw("([idCliente] IS NOT NULL)"))
+  nombre    String?  @db.NVarChar(250)
+  estado    Boolean?
+}
+
+model ControlPesajeEntrada {
+  IDControlPesaje    Int       @id(map: "PK_ControlPesaje_1") @default(autoincrement())
+  IDLocal            Int?
+  idControlConductor Int?
+  idUser             Int?
+  idProducto         Int?
+  CodSalida          String    @db.NVarChar(50)
+  CodDia             String?   @db.NVarChar(50)
+  DigitaEntrada      String?   @db.NVarChar(Max)
+  Producto           String?   @db.NVarChar(Max)
+  Conductor          String?   @db.NVarChar(Max)
+  Placa              String?   @db.NVarChar(50)
+  PesoEntrada        Decimal?  @db.Decimal(18, 2)
+  Descripcion        String?   @db.NVarChar(Max)
+  Fecha              DateTime? @db.Date
+  FechaHora          DateTime? @db.DateTime
+}
+
+model ControlPesajeSalida {
+  IDControlPesajeSalida Int       @id(map: "PK_ControlPesajeSalida") @default(autoincrement())
+  idUser                Int?
+  IDControlPesaje       Int?
+  Digita                String?   @db.NVarChar(Max)
+  PesoSalida            Decimal?  @db.Decimal(18, 2)
+  FechaHora             DateTime? @db.DateTime
+}
+
+model CreditoGarante {
+  IDCreditoGarante  Int     @id(map: "PK_CreditoGarante") @default(autoincrement())
+  IDCreditoOtorgado Int?
+  NombreCompleto    String? @db.NVarChar(250)
+  Ci                String? @db.NVarChar(15)
+  Direccion         String? @db.NVarChar(250)
+  Telefono1         String? @db.NVarChar(20)
+  Telefono2         String? @db.NVarChar(20)
+  Correo            String? @db.NVarChar(150)
+  Nota              String? @db.NVarChar(250)
+}
+
+model CreditoOtorgado {
+  IDCreditoOtorgado Int       @id(map: "PK_CreditoOtorgado") @default(autoincrement())
+  NCredito          Int?
+  Garantia          String?   @db.NVarChar(250)
+  Descripcion       String?   @db.NVarChar(250)
+  Capital           Decimal?  @db.Decimal(18, 2)
+  FechaEmitido      DateTime? @db.DateTime
+}
+
+model CreditoPago {
+  IDCreditoPago Int      @id(map: "PK_CreditoPago") @default(autoincrement())
+  IDTipoPago    Int?
+  IDMovimiento  Int?
+  TipoPago      String?  @db.NVarChar(250)
+  Deposito      Decimal? @db.Decimal(18, 2)
+  Efectivo      Decimal? @db.Decimal(18, 2)
+}
+
+model CreditoPrestamista {
+  IDCreditoPrestamista Int     @id(map: "PK_CreditoPrestamista") @default(autoincrement())
+  IDFolder             Int?
+  NombreCompleto       String? @db.NVarChar(250)
+  Ci                   String? @db.NVarChar(15)
+  Direccion            String? @db.NVarChar(250)
+  Telefono1            String? @db.NVarChar(20)
+  Telefono2            String? @db.NVarChar(20)
+  Correo               String? @db.NVarChar(150)
+  Nota                 String? @db.NVarChar(250)
+}
+
+model CreditoTipoPago {
+  IDTipoPago        Int       @id(map: "PK_CreditoTipoPago") @default(autoincrement())
+  IDCreditoOtorgado Int?
+  CapitalRestante   Decimal?  @db.Decimal(18, 2)
+  CapitalCobrado    Decimal?  @db.Decimal(18, 2)
+  CapitalInicial    Decimal?  @db.Decimal(18, 2)
+  InteresPorcentaje String?   @db.NVarChar(10)
+  InteresACobrar    Decimal?  @db.Decimal(18, 2)
+  InteresCobrado    Decimal?  @db.Decimal(18, 2)
+  InteresNoCobrado  Decimal?  @db.Decimal(18, 2)
+  Dias              Int?
+  FechaInicial      DateTime? @db.DateTime
+  FechaFinal        DateTime? @db.DateTime
+  FechaReferencial  DateTime? @db.DateTime
+  Estado            Boolean?
+}
+
+model CSCuentasContables {
+  IDCSCuentasContables Int      @id(map: "PK_CSCuentasContables") @default(autoincrement())
+  IDCierreSucursales   Int?
+  IDCuenta             Int?
+  IDSubSub             Int?
+  Posicion             Int?
+  NombreCuenta         String?  @db.NVarChar(150)
+  Valor                Decimal? @db.Decimal(18, 5)
+  Precio               Decimal? @db.Decimal(18, 5)
+  Stock                Decimal? @db.Decimal(18, 5)
+}
+
+model CSInventario {
+  IDCSInventario     Int      @id(map: "PK_CSInventario") @default(autoincrement())
+  IDCierreSucursales Int?
+  IDProducto         Int?
+  Orden              Int?
+  Cantidad           Decimal? @db.Decimal(18, 5)
+  Precio             Decimal? @db.Decimal(18, 5)
+  Stock              Decimal? @db.Decimal(18, 5)
+}
+
+model CSSaldoActualAnterior {
+  IDCSSaldo          Int      @id(map: "PK_CSSaldoActualAnterior") @default(autoincrement())
+  IDCierreSucursales Int?
+  OrdenAnterior      Int?
+  CantidadAnterior   Decimal? @db.Decimal(18, 5)
+  OrdenActual        Int?
+  CantidadActual     Decimal? @db.Decimal(18, 5)
+}
+
+model CuentaContable {
+  IDCuentaContable Int     @id(map: "PK_CuentaContable") @default(autoincrement())
+  Cuenta           String? @db.NVarChar(150)
+}
+
+model Deuda_Sucursal {
+  idDeudaSucursal Int  @id(map: "PK_Deuda_Sucursal") @default(autoincrement())
+  idVentana       Int?
+  idSucursal      Int?
+}
+
+model Deuda_Sucursal_Movimiento {
+  idDeudaSucursalMovimiento Int       @id(map: "PK_Deuda_Sucursal_Movimiento") @default(autoincrement())
+  idAsientoDetalle          Int?
+  idUser                    Int?
+  idLocal                   Int?
+  fecha                     DateTime? @db.DateTime
+}
+
+model Deuda_Sucursal_Movimiento_Items {
+  idMovimientoItem          Int  @id(map: "PK_Deuda_Sucursal_Movimiento_Items") @default(autoincrement())
+  idAsientoDetalle          Int?
+  idDeudaSucursalMovimiento Int?
+  idDeudaSucursal           Int?
+}
+
+model Deuda_Sucursal_Movimiento_OtraSucursal {
+  idMovimientoItem Int      @id(map: "PK_Deuda_Sucursal_Movimiento_OtraSucursal")
+  idAsientoDetalle Int?
+  debe             Decimal? @db.Decimal(18, 2)
+  haber            Decimal? @db.Decimal(18, 2)
+}
+
+model Deuda_Sucursal_Movimiento_Ventana {
+  idMovimientoItem Int      @id(map: "PK_Deuda_Sucursal_Movimiento_Ventana")
+  idAsientoDetalle Int?
+  debe             Decimal? @db.Decimal(18, 2)
+  haber            Decimal? @db.Decimal(18, 2)
+}
+
+model Deuda_Sucursal_Tipo_Movimiento {
+  idDeudaSucursalTipo Int     @id(map: "PK_Deuda_Sucursal_Tipo_Movimiento")
+  nombre              String? @db.NVarChar(150)
+}
+
+model DeudaSucursal {
+  IDDeudaSucursal   Int       @id(map: "PK_MovimientoDeudaSucursales") @default(autoincrement())
+  IDLocalPrincipal  Int?
+  IDLocalSecundaria Int?
+  IDLocalQDa        Int?
+  NombreDeuda       String?   @db.NVarChar(250)
+  Fecha             DateTime? @db.DateTime
+  FechaModificada   DateTime? @db.DateTime
+}
+
+model DeudaSucursalDar {
+  IDDSDar      Int       @id(map: "PK_DeudaSucursalDar") @default(autoincrement())
+  IDDSM        Int?
+  IDMovimiento Int?
+  IDLocal      Int?
+  Cantidad     Decimal?  @db.Decimal(18, 2)
+  Fecha        DateTime? @db.DateTime
+}
+
+model DeudaSucursalM {
+  IDDSM           Int       @id(map: "PK_DeudaSucursalM") @default(autoincrement())
+  IDDeudaSucursal Int?
+  IDLocal         Int?
+  Usuario         String?   @db.NVarChar(150)
+  Fecha           DateTime? @db.DateTime
+}
+
+model DeudaSucursalRecibir {
+  IDDSRecibir  Int       @id(map: "PK_DeudaSucursalRecibir") @default(autoincrement())
+  IDDSM        Int?
+  IDMovimiento Int?
+  IDLocal      Int?
+  Cantidad     Decimal?  @db.Decimal(18, 2)
+  Fecha        DateTime? @db.DateTime
+}
+
+model EmbodegadoVenta {
+  IDVentaEmbodegado Int       @id(map: "PK_EmbodegadoVenta") @default(autoincrement())
+  IDCliente         Int?
+  IDProducto        Int?
+  Humedad           Decimal?  @db.Decimal(18, 2)
+  QQ                Decimal?  @db.Decimal(18, 2)
+  Precio            Decimal?  @db.Decimal(18, 2)
+  VCobrar           Decimal?  @db.Decimal(18, 2)
+  Detalle           String?   @db.NVarChar(Max)
+  Estado            Boolean?
+  Fecha             DateTime? @db.Date
+  FechaHora         DateTime? @db.DateTime
+}
+
+model EmbodegadoVentaEntrada {
+  IDEmbodegadoVentaEntrada Int       @id(map: "PK_EmbodegadoVentaEntrada") @default(autoincrement())
+  IDVentaEmbodegado        Int?
+  Digita                   String?   @db.NVarChar(Max)
+  Bascula                  String?   @db.NVarChar(Max)
+  Chofer                   String?   @db.NVarChar(Max)
+  Vehiculo                 String?   @db.NVarChar(Max)
+  Humedad                  Decimal?  @db.Decimal(18, 2)
+  Impureza                 Decimal?  @db.Decimal(18, 2)
+  PesoEntrada              Decimal?  @db.Decimal(18, 2)
+  QQ                       Decimal?  @db.Decimal(18, 2)
+  Bultos                   Decimal?  @db.Decimal(18, 2)
+  Peso                     Decimal?  @db.Decimal(18, 2)
+  NotaEmbarque             String?   @db.NVarChar(Max)
+  FechaHora                DateTime? @db.DateTime
+  Fecha                    DateTime? @db.Date
+}
+
+model EmbodegadoVentaSalida {
+  IDEmbodegadoVentaSalida  Int       @id(map: "PK_EmbodegadoVentaSalida") @default(autoincrement())
+  IDEmbodegadoVentaEntrada Int?
+  IDVentaEmbodegado        Int?
+  Digita                   String?   @db.NVarChar(Max)
+  PesoSalida               Decimal?  @db.Decimal(18, 2)
+  Guia                     String?   @db.NVarChar(Max)
+  Destino                  String?   @db.NVarChar(Max)
+  Nota                     String?   @db.NVarChar(Max)
+  FechaHora                DateTime? @db.DateTime
+  Fecha                    DateTime? @db.Date
+  QQ                       Decimal?  @db.Decimal(18, 2)
+}
+
+model Empleado {
+  idEmpleado  Int       @id(map: "PK_Empleado") @default(autoincrement())
+  idCliente   Int       @unique(map: "idCliente")
+  Estado      Boolean
+  FechaCreate DateTime? @db.DateTime
+  FechaUpdate DateTime? @db.DateTime
+}
+
+model EnvioDeCaja {
+  IDCaja        Int       @id(map: "PK_EnvioDeCaja") @default(autoincrement())
+  IDLocal       Int?
+  IDLocal2      Int?
+  IDCuentaCaja1 Int?
+  IDCuentaCaja2 Int?
+  IDReferencia  Int?
+  IDMovimiento  Int?
+  Detalle       String?   @db.NVarChar(Max)
+  CodCaja       String?   @db.NVarChar(50)
+  Debe          Decimal?  @db.Decimal(18, 2)
+  Haber         Decimal?  @db.Decimal(18, 2)
+  Fecha         DateTime? @db.DateTime
+  Usuario       String?   @db.NVarChar(50)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model FechaMeses {
+  IDMes    Int?
+  Cantidad Decimal? @db.Decimal(18, 2)
+  Mes      String?  @db.NVarChar(50)
+
+  @@ignore
+}
+
+model FormulaStock {
+  IDFormulaStock Int      @id(map: "PK_FormulaStock")
+  Producto       String?  @db.NVarChar(100)
+  HumedadSeco    Decimal? @db.Decimal(18, 2)
+  ServicioBasico Decimal? @db.Decimal(18, 2)
+  Merma          Decimal? @db.Decimal(18, 2)
+}
+
+model Foto_Validacion {
+  id         Int       @id(map: "PK_Foto_Validacion")
+  tipo       String?   @db.NVarChar(250)
+  minutos    Int?
+  dateUpdate DateTime? @db.DateTime
+}
+
+model IngresosCuenta {
+  IDIngresosCuenta Int      @id(map: "PK_IngresosCuenta") @default(autoincrement())
+  IDIngresosGrupo  Int?
+  Descripcion      String?  @db.NVarChar(250)
+  MasSubCuenta     Boolean?
+}
+
+model IngresosGrupo {
+  IDIngresosGrupo Int     @id(map: "PK_IngresosGrupo") @default(autoincrement())
+  Descripcion     String? @db.NVarChar(250)
+}
+
+model IngresosSubCuenta {
+  IDIngresosSubCuentas Int     @id(map: "PK_IngresosSubCuenta") @default(autoincrement())
+  IDIngresosCuenta     Int?
+  Descripcion          String? @db.NVarChar(250)
+}
+
+model IngresosVarios {
+  IDIngresoVarios Int     @id(map: "PK_IngresosVarios") @default(autoincrement())
+  IDLocal         Int?
+  IngresoNombre   String? @db.NVarChar(250)
+}
+
+model IngresosVariosHistorial {
+  IDIngresoHistoria Int       @id(map: "PK_IngresosVariosHistorial") @default(autoincrement())
+  IDIngresoVarios   Int?
+  IDMovimiento      Int?
+  Cantidad          Decimal?  @db.Decimal(18, 2)
+  FechaHora         DateTime? @db.DateTime
+}
+
+model KardexCliente {
+  KardexClienteID Int       @id(map: "PK_KardexCliente")
+  IdCliente       Int?
+  Nombres         String?   @db.NVarChar(Max)
+  CI              String?   @db.NVarChar(Max)
+  FechaNacimiento DateTime? @db.Date
+  Direccion       String?   @db.NVarChar(Max)
+  Telefono        String?   @db.NVarChar(50)
+  Telefono2       String?   @db.NVarChar(50)
+  Correo          String?   @db.NVarChar(Max)
+  Nota            String?   @db.NVarChar(Max)
+  Foto            Bytes?    @db.Image
+}
+
+model KardexControlApagar {
+  KardexControlCobrarID Int       @id(map: "PK_KardexControlApagar") @default(autoincrement())
+  KardexPrestamoID      Int?
+  Capital               Decimal?  @db.Decimal(18, 2)
+  PorcentajeInteres     Decimal?  @db.Decimal(18, 2)
+  Interes               Decimal?  @db.Decimal(18, 2)
+  InteresPendiente      Decimal?  @db.Decimal(18, 2)
+  Dias                  Int?
+  FechaInicio           DateTime? @db.DateTime
+  FechaFinal            DateTime? @db.Date
+  Renegocio             Boolean?
+  FechaReferencial      DateTime? @db.DateTime
+}
+
+model KardexGarantes {
+  KardexGaranteID  Int       @id(map: "PK_KardexGarantes") @default(autoincrement())
+  KardexPrestamoID Int?
+  Nombres          String?   @db.NVarChar(Max)
+  CI               String?   @db.NVarChar(Max)
+  FechaNacimiento  DateTime? @db.Date
+  Telefono         String?   @db.NVarChar(50)
+  Telefono2        String?   @db.NVarChar(50)
+  Direccion        String?   @db.NVarChar(Max)
+  Nota             String?   @db.NVarChar(Max)
+}
+
+model KardexPagos {
+  KardexPagoID          Int       @id(map: "PK_KardexPagos") @default(autoincrement())
+  KardexControlCobrarID Int?
+  KardexPrestamoID      Int?
+  Efectivo              Decimal?  @db.Decimal(18, 2)
+  Deposito              Decimal?  @db.Decimal(18, 2)
+  Fecha                 DateTime? @db.Date
+  FechaHora             DateTime? @db.DateTime
+  Detalle               String?   @db.NVarChar(Max)
+  Interes               Decimal?  @db.Decimal(18, 2)
+  Capital               Decimal?  @db.Decimal(18, 2)
+}
+
+model KardexPrestamo {
+  KardexPrestamoID Int       @id(map: "PK_KardexPrestamo") @default(autoincrement())
+  KardexClienteID  Int?
+  NCreditoCliente  Int?
+  Nombres          String?   @db.NVarChar(Max)
+  CI               String?   @db.NVarChar(Max)
+  Garantia         String?   @db.NVarChar(Max)
+  Descripcion      String?   @db.NVarChar(Max)
+  Capital          Decimal?  @db.Decimal(18, 2)
+  FechaHora        DateTime? @db.DateTime
+  Cobrado          Boolean?
+}
+
+model LimiteHumedadVenta {
+  IDProducto    Int      @id(map: "PK_LimiteHumedadVenta") @default(autoincrement())
+  Descripcion   String?  @db.NVarChar(50)
+  HumedadMinima Decimal? @db.Decimal(18, 2)
+}
+
+model Local {
+  IDLocal Int     @id(map: "PK_Local") @default(autoincrement())
+  Local   String? @db.NVarChar(Max)
+}
+
+model Mayorista {
+  idMayorista Int       @id(map: "PK_Mayorista") @default(autoincrement())
+  idCliente   Int?      @unique(map: "UniqueIdCliente")
+  Estado      Boolean?
+  FechaCreate DateTime? @db.DateTime
+  FechaUpdate DateTime? @db.DateTime
+}
+
+model MostrarProducto {
+  IDProducto      Int       @id(map: "PK_MostrarProducto") @default(autoincrement())
+  idLocal         Int?
+  ProductoMostrar String?   @db.NVarChar(Max)
+  estado          Boolean?
+  updated         DateTime? @db.DateTime
+}
+
+model Movimiento {
+  IDMovimiento                    BigInt   @id(map: "PK_Movimiento") @default(autoincrement())
+  IDMovimientoDetalle             Int?
+  IDCuentaContontableCuentaSubSub Int?
+  IDChequeRecibido                String?  @db.NVarChar(50)
+  IDChequeComercial               String?  @db.NVarChar(50)
+  IDComprobanteDeposito           String?  @db.NVarChar(50)
+  IDComprobanteDepositoVenta      String?  @db.NVarChar(50)
+  Debe                            Decimal? @db.Decimal(18, 2)
+  Haber                           Decimal? @db.Decimal(18, 2)
+  Parcial                         Decimal? @db.Decimal(18, 2)
+}
+
+model MovimientoBanco {
+  IDMovimientoBanco Int       @id(map: "PK_MovimientoBanco") @default(autoincrement())
+  IDBanco           Int?
+  IDMovimiento      Int?
+  IDCheque          Int?
+  IDDeposito        Int?
+  Debe              Decimal?  @db.Decimal(18, 4)
+  Haber             Decimal?  @db.Decimal(18, 4)
+  FechaHora         DateTime? @db.DateTime
+}
+
+model MovimientoCaja {
+  IDMovimientoCaja Int       @id(map: "PK_MovimientoCaja") @default(autoincrement())
+  IDMovimiento     Int?
+  IDCaja           Int?
+  CompCaja         Int?
+  Debe             Decimal?  @db.Decimal(18, 2)
+  Haber            Decimal?  @db.Decimal(18, 2)
+  Fecha            DateTime? @db.DateTime
+}
+
+model MovimientoCierreDiario {
+  IDMovimientoDiario        Int       @id(map: "PK_MovimientoDiario") @default(autoincrement())
+  IDMovimientoReporteCierre Int?
+  IDLocal                   Int?
+  FechaHora                 DateTime? @db.DateTime
+  Detalle                   String?   @db.NVarChar(Max)
+  Usuario                   String?   @db.NVarChar(50)
+  FechaHoraSalida           DateTime? @db.DateTime
+  DetalleSalida             String?   @db.NVarChar(Max)
+  UsuarioSalida             String?   @db.NVarChar(50)
+}
+
+model MovimientoCierreSistema {
+  IDMovimientoCierreSistema Int       @id(map: "PK_MovimientoCierreSistema") @default(autoincrement())
+  IDLocal                   Int?
+  ValorAnterior             Decimal?  @db.Decimal(18, 2)
+  ValorNuevo                Decimal?  @db.Decimal(18, 2)
+  Fecha                     DateTime? @db.DateTime
+  Usuario                   String?   @db.NVarChar(150)
+}
+
+model MovimientoCierreSistemaDatos {
+  IDMovimientoCierreSistemaDatos Int      @id(map: "PK_MovimientoCierreSistemaDatos") @default(autoincrement())
+  IDMovimientoCierreSistema      Int?
+  Pintar                         Boolean?
+  TipoCuenta                     Int?
+  Cuenta                         String?  @db.NVarChar(250)
+  Stock                          String?  @db.NVarChar(250)
+  Precio                         String?  @db.NVarChar(250)
+  Inversion                      String?  @db.NVarChar(250)
+  Total                          String?  @db.NVarChar(250)
+}
+
+model MovimientoCreditoBancario {
+  IDCreditoBancario Int       @id(map: "PK_MovimientoCreditoBancario") @default(autoincrement())
+  IDNombreCuenta    Int?
+  IDMovimiento      Int?
+  Debe              Decimal?  @db.Decimal(18, 2)
+  Haber             Decimal?  @db.Decimal(18, 2)
+  Fecha             DateTime? @db.DateTime
+}
+
+model MovimientoCreditoPersona {
+  IDMovimientoCreditoPersonas Int       @id(map: "PK_MovimientoCreditoPersona") @default(autoincrement())
+  IDMovimiento                Int?
+  IDCreditoPersona            Int?
+  Debe                        Decimal?  @db.Decimal(18, 2)
+  Haber                       Decimal?  @db.Decimal(18, 2)
+  Fecha                       DateTime? @db.DateTime
+}
+
+model MovimientoCruces {
+  IDMovimientoCruce Int       @id(map: "PK_MovimientoCruces") @default(autoincrement())
+  IDLocal           Int?
+  Fecha             DateTime? @db.DateTime
+}
+
+model MovimientoCrucesItems {
+  IDMovimientoCreceItem Int     @id(map: "PK_MovimientoCrucesItems") @default(autoincrement())
+  IDMovimientoCruce     Int?
+  IDMovimiento          Int?
+  IDMovimeinto2         String? @db.NVarChar(20)
+}
+
+model MovimientoCuentaInicial {
+  IDMovimientoCuentaInicial Int       @id(map: "PK_MovimientoCuentaInicial") @default(autoincrement())
+  Fecha                     DateTime? @db.DateTime
+  FechaCreado               DateTime? @db.DateTime
+  Usuario                   String?   @db.NVarChar(150)
+}
+
+model MovimientoCuentaInversion {
+  IDMovimientoCuentaInversion Int      @id(map: "PK_MovimientoCuentaInversion") @default(autoincrement())
+  Descripcion                 String?  @db.NVarChar(250)
+  Status                      Boolean?
+}
+
+model MovimientoCuentaOtroNegocio {
+  IDMovimientoCuentaOtroNegocio Int     @id(map: "PK_MovimientoCuentaPropiedades") @default(autoincrement())
+  IDLocal                       Int?
+  IDMovimientoOtroNegocioTipo   Int?
+  Descripcion                   String? @db.NVarChar(250)
+}
+
+model MovimientoCuentaOtroNegocioTipo {
+  IDMovimientoOtroNegocioTipo Int     @id(map: "PK_MovimientoCPTipo") @default(autoincrement())
+  Descripcion                 String? @db.NVarChar(250)
+}
+
+model MovimientoDetalle {
+  IDMovimientoDetalle  Int       @id(map: "PK_MovimientoDetalle") @default(autoincrement())
+  IDLocal              Int?
+  IDBoletoEntrada      String?   @db.NVarChar(50)
+  IDBoletoEntradaVenta String?   @db.NVarChar(50)
+  IDVentaEmbodegado    String?   @db.NVarChar(50)
+  IDComision           String?   @db.NVarChar(50)
+  IDParcial            String?   @db.NVarChar(50)
+  IDRomana             String?   @db.NVarChar(50)
+  IDCredito            String?   @db.NVarChar(50)
+  IDCompraEspecial     String?   @db.NVarChar(50)
+  IDVentaEspecial      String?   @db.NVarChar(50)
+  IDVentaBodeguita     String?   @db.NVarChar(50)
+  IDServicioPesaje     String?   @db.NVarChar(50)
+  CompCaja             String?   @db.NVarChar(50)
+  Detalle              String?   @db.NVarChar(Max)
+  FechaHora            DateTime? @db.DateTime
+  Fecha                DateTime? @db.Date
+  Usuario              String?   @db.NVarChar(Max)
+}
+
+model MovimientoEmpleadoAnticipo {
+  IDEmpleadoAnticipo Int       @id(map: "PK_MovimientoAnticipo") @default(autoincrement())
+  IDEmpleado         Int?
+  IDMovimiento       Int?
+  IDSueldo           Int?
+  Debe               Decimal?  @db.Decimal(18, 2)
+  Haber              Decimal?  @db.Decimal(18, 2)
+  Fecha              DateTime? @db.DateTime
+}
+
+model MovimientoEmpleadoNombre {
+  IDEmpleados Int     @id(map: "PK_Empleados") @default(autoincrement())
+  Nombres     String? @db.NVarChar(250)
+  Cedula      String? @db.NVarChar(15)
+  Direccion   String? @db.NVarChar(250)
+  Telefono    String? @db.NVarChar(40)
+}
+
+model MovimientoEmpleadoSueldo {
+  IDEmpleadoSueldo Int       @id(map: "PK_MovimientoSueldo") @default(autoincrement())
+  IDEmpleado       Int?
+  IDMovimiento     Int?
+  Debe             Decimal?  @db.Decimal(18, 2)
+  Haber            Decimal?  @db.Decimal(18, 2)
+  Fecha            DateTime? @db.DateTime
+}
+
+model MovimientoEmpleadoTipo {
+  IDTipoEmpleado Int     @id(map: "PK_EmpleadoTipo") @default(autoincrement())
+  DetalleTipo    String? @db.NVarChar(150)
+}
+
+model MovimientoFechaInicial {
+  IDMovimientoFecha Int       @id(map: "PK_MovimientoFechaInicial") @default(autoincrement())
+  IDCuenta          Int?
+  Fecha             DateTime? @db.DateTime
+}
+
+model MovimientoGastoOtroNegocio {
+  IDMovimientoGastoOtroNegocio Int       @id(map: "PK_MovimientoGastoOtroNegocio") @default(autoincrement())
+  IDMovimiento                 Int?
+  IDOtroNegocio                Int?
+  Debe                         Decimal?  @db.Decimal(18, 2)
+  Haber                        Decimal?  @db.Decimal(18, 2)
+  Fecha                        DateTime? @db.DateTime
+}
+
+model MovimientoGastos {
+  IDMovimientoGastos Int       @id(map: "PK_MovimientoGastos") @default(autoincrement())
+  IDGastoSubCuenta   Int?
+  IDMovimiento       Int?
+  IDReferencia       Int?
+  Cantidad           Decimal?  @db.Decimal(18, 2)
+  Fecha              DateTime? @db.DateTime
+}
+
+model MovimientoGastoServicioBasicoLaso {
+  IDServicioBasicoLaso  Int  @id(map: "PK_GastoServicioBasicoLaso") @default(autoincrement())
+  IDGastoServicioBasico Int?
+  IDGasto               Int?
+}
+
+model MovimientoGastoVehiculoLaso {
+  IDMovimientoGastoVehiculo Int  @id(map: "PK_MovimientoGastoVehiculo") @default(autoincrement())
+  IDVehiculo                Int?
+  IDGasto                   Int?
+}
+
+model MovimientoIngreso {
+  IDMovimientoIngreso Int       @id(map: "PK_MovimientoIngreso") @default(autoincrement())
+  IDMovimiento        Int?
+  IDCuentaIngreso     Int?
+  Debe                Decimal?  @db.Decimal(18, 2)
+  Haber               Decimal?  @db.Decimal(18, 2)
+  Fecha               DateTime? @db.DateTime
+}
+
+model MovimientoIngresoArriendo {
+  IDMovimientoIngresoArriendo Int       @id(map: "PK_MovimientoIngresoArriendo") @default(autoincrement())
+  IDMovimiento                Int?
+  Debe                        Decimal?  @db.Decimal(18, 2)
+  Haber                       Decimal?  @db.Decimal(18, 2)
+  Fecha                       DateTime? @db.DateTime
+}
+
+model MovimientoIngresoOtraSucursal {
+  IDMovimientoIngresoOtroNegocio Int       @id(map: "PK_MovimientoIngresoOtraSucursal") @default(autoincrement())
+  IDMovimiento                   Int?
+  IDSubCuenta                    Int?
+  Debe                           Decimal?  @db.Decimal(18, 2)
+  Haber                          Decimal?  @db.Decimal(18, 2)
+  Fecha                          DateTime? @db.DateTime
+}
+
+model MovimientoIngresoOtroNegocio {
+  IDMovimientoIngresoOtroNegocio Int       @id(map: "PK_MovimientoIngresoOtroNegocio") @default(autoincrement())
+  IDMovimiento                   Int?
+  IDOtroNegocio                  Int?
+  Debe                           Decimal?  @db.Decimal(18, 2)
+  Haber                          Decimal?  @db.Decimal(18, 2)
+  Fecha                          DateTime? @db.DateTime
+}
+
+model MovimientoInversionOtroNegocio {
+  IDMovimientoInversion Int       @id(map: "PK_MovimientoInversion") @default(autoincrement())
+  IDMovimiento          Int?
+  IDOtroNegocio         Int?
+  Debe                  Decimal?  @db.Decimal(18, 2)
+  Haber                 Decimal?  @db.Decimal(18, 2)
+  Fecha                 DateTime? @db.DateTime
+}
+
+model MovimientoPropietario {
+  IDMovimientoPropietario Int       @id(map: "PK_MovimientoPropietario") @default(autoincrement())
+  IDCuentaPropietario     Int?
+  IDSucursal              Int?
+  IDMovimiento            Int?
+  Debe                    Decimal?  @db.Decimal(18, 4)
+  Haber                   Decimal?  @db.Decimal(18, 4)
+  Fecha                   DateTime? @db.DateTime
+}
+
+model MovimientoRendimientoPersona {
+  IDMovimientoRendimientoPersona Int       @id(map: "PK_MovimientoRendimientoPersona") @default(autoincrement())
+  IDMovimiento                   Int?
+  Debe                           Decimal?  @db.Decimal(18, 2)
+  Haber                          Decimal?  @db.Decimal(18, 2)
+  Fecha                          DateTime? @db.DateTime
+}
+
+model MovimientoRetencion {
+  IDMovimientoRetencion Int       @id(map: "PK_MovimientoRetencion") @default(autoincrement())
+  IDMovimiento          Int?
+  IDRetencion           Int?
+  Debe                  Decimal?  @db.Decimal(18, 2)
+  Haber                 Decimal?  @db.Decimal(18, 2)
+  Fecha                 DateTime? @db.DateTime
+}
+
+model MovimientoSaldoInicialyFinal {
+  IDMovimientoSaldoIni Int       @id(map: "PK_MovimientoSaldoInicialyFinal") @default(autoincrement())
+  FechaInicial         DateTime? @db.DateTime
+  UsuarioInicial       String?   @db.NVarChar(50)
+  FechaFinal           DateTime? @db.DateTime
+  UsuarioFinal         String?   @db.NVarChar(50)
+}
+
+model MovimientoServicioPesaje {
+  IDMovimientoServicioPesaje Int       @id(map: "PK_MovimientoServicioPesaje") @default(autoincrement())
+  IDMovimiento               Int?
+  IDServicioPesaje           Int?
+  IDCliente                  Int?
+  Debe                       Decimal?  @db.Decimal(18, 2)
+  Haber                      Decimal?  @db.Decimal(18, 2)
+  Fecha                      DateTime? @db.DateTime
+}
+
+model MovimientoSPesajeProducto {
+  IDMovimientoSPesajeProducto Int       @id(map: "PK_MovimientoSPesajeProducto") @default(autoincrement())
+  IDMovimiento                Int?
+  IDCliente                   Int?
+  Producto                    String?   @db.NVarChar(250)
+  Debe                        Decimal?  @db.Decimal(18, 2)
+  Haber                       Decimal?  @db.Decimal(18, 2)
+  Fecha                       DateTime? @db.DateTime
+}
+
+model MovimientoSucursal {
+  IDMovimientoSucursales Int       @id(map: "PK_MovimientoSucursal") @default(autoincrement())
+  IDSucursal1            Int?
+  IDSucursal2            Int?
+  IDMovimiento           Int?
+  Debe                   Decimal?  @db.Decimal(18, 4)
+  Haber                  Decimal?  @db.Decimal(18, 4)
+  Fecha                  DateTime? @db.DateTime
+}
+
+model MovimientoSucursalOtroNegocio {
+  IDMovimientoSucursalOtroNegocio Int     @id(map: "PK_MovimientoSucursalOtroNegocio") @default(autoincrement())
+  Descripcion                     String? @db.NVarChar(250)
+}
+
+model MovimientoVentaSubProducto {
+  IDMovimientoVentaSubProducto Int       @id(map: "PK_MovimientoVentaSubProducto") @default(autoincrement())
+  IDMovimiento                 Int?
+  IDSubProducto                Int?
+  IDCliente                    Int?
+  Debe                         Decimal?  @db.Decimal(18, 2)
+  Haber                        Decimal?  @db.Decimal(18, 2)
+  Fecha                        DateTime? @db.DateTime
+}
+
+model Pago_Deposito_Recibido {
+  id                     Int       @id(map: "PK_pago_deposito_recibido") @default(autoincrement())
+  idCliente              Int?
+  idTransferenciaEmitida Int?
+  idAsientoDetalle       Int?
+  idBanco                Int?
+  nDeposito              String?   @db.NVarChar(250)
+  detalle                String?   @db.NVarChar(250)
+  cantidad               Decimal?  @db.Decimal(18, 2)
+  fecha                  DateTime? @db.DateTime
+}
+
+model Pago_Efectivo_Recibido {
+  id               Int      @id(map: "PK_Pago_Efectivo_Recibido") @default(autoincrement())
+  idAsientoDetalle Int?
+  cantidad         Decimal? @db.Decimal(18, 2)
+}
+
+model Pago_Transferencia_Recibida {
+  id                     Int       @id(map: "PK_Pago_Transferencia_Recibida") @default(autoincrement())
+  idCliente              Int?
+  idTransferenciaEmitida Int?
+  idAsientoDetalle       Int?
+  idBanco                Int?
+  nTransferencia         String?   @db.NVarChar(250)
+  detalle                String?   @db.NVarChar(250)
+  cantidad               Decimal?  @db.Decimal(18, 2)
+  fecha                  DateTime? @db.DateTime
+}
+
+model PagoCCAdministrador {
+  ID          Int       @id(map: "PK_PagoCCAdministrador") @default(autoincrement())
+  Comprobante String?   @db.NVarChar(50)
+  Digita      String?   @db.NVarChar(Max)
+  Cliente     String?   @db.NVarChar(Max)
+  CI          String?   @db.NVarChar(Max)
+  Precio      Decimal?  @db.Decimal(18, 2)
+  PesoPagar   Decimal?  @db.Decimal(18, 2)
+  ValorTotal  Decimal?  @db.Decimal(18, 2)
+  Efectivo    Decimal?  @db.Decimal(18, 2)
+  Cheque      Decimal?  @db.Decimal(18, 2)
+  FechaHora   DateTime? @db.DateTime
+  Fecha       DateTime? @db.Date
+}
+
+model PagoComprobanteCompra {
+  IDPagoComprobanteCompra Int       @id(map: "PK_PagoComprobanteCompra_1") @default(autoincrement())
+  IDBoletoEntrada         Int?
+  Comprobante             String?   @db.NVarChar(Max)
+  Digita                  String?   @db.NVarChar(Max)
+  Precio                  Decimal?  @db.Decimal(10, 6)
+  PesoPagar               Decimal?  @db.Decimal(18, 2)
+  ValorTotal              Decimal?  @db.Decimal(18, 2)
+  RetencionReal           Decimal?  @db.Decimal(18, 2)
+  RencionPorcen           Decimal?  @db.Decimal(18, 3)
+  ValorPagar              Decimal?  @db.Decimal(18, 2)
+  Efectivo                Decimal?  @db.Decimal(18, 2)
+  Cheque                  Decimal?  @db.Decimal(18, 2)
+  Pendiente               Decimal?  @db.Decimal(18, 2)
+  Anticipo                Decimal?  @db.Decimal(18, 2)
+  FechaHora               DateTime? @db.DateTime
+  Fecha                   DateTime? @db.Date
+  Estado                  Boolean?
+  Cheque1                 String?   @db.NVarChar(Max)
+  Cheque2                 String?   @db.NVarChar(Max)
+  Cheque3                 String?   @db.NVarChar(Max)
+}
+
+model PagoPendienteCompra {
+  IDPagoPendienteCompra Int       @id(map: "PK_PagoPendiente") @default(autoincrement())
+  IDBoletoEntrada       Int?
+  Digita                String?   @db.NVarChar(Max)
+  Efectivo              Decimal?  @db.Decimal(10, 2)
+  Cheque                Decimal?  @db.Decimal(10, 2)
+  Pendiente             Decimal?  @db.Decimal(10, 2)
+  FechaHora             DateTime? @db.DateTime
+}
+
+model PagosMultiples {
+  IDPagosMultiples Int       @id(map: "PK_PagosMultiples") @default(autoincrement())
+  PMCompraVenta    String?   @db.NVarChar(Max)
+  FechaHora        DateTime? @db.DateTime
+}
+
+model PagosMultiplesItems {
+  IDPagosMultiplesItems Int      @id(map: "PK_PagosMultiplesItems") @default(autoincrement())
+  IDPagosMultiples      Int?
+  IDBoletoEntrada       Int?
+  IDMovimientoDetalle   Int?
+  IDMovimientoDetalle2  String?  @db.NVarChar(50)
+  Cruce                 Boolean?
+}
+
+model Parcial {
+  IDParcial Int     @id(map: "PK_Parcial") @default(autoincrement())
+  Nombre    String? @db.NVarChar(Max)
+  Telefono  String? @db.NVarChar(Max)
+  Direccion String? @db.NVarChar(Max)
+}
+
+model PrecioPesajeEspecial {
+  ID                   Int      @id(map: "PK_PrecioPesajeEspecial") @default(autoincrement())
+  PrecioPesajeEspecial Decimal? @db.Decimal(18, 2)
+}
+
+model Print_Ip {
+  idLocal      Int       @id(map: "PK_Print_Ip")
+  ip           String?   @db.NVarChar(20)
+  fecha        DateTime? @db.Date
+  fechaUpdated DateTime? @db.DateTime
+}
+
+model Producto {
+  IDProducto      Int       @id(map: "PK_Producto") @default(autoincrement())
+  IDLocal         Int?
+  Descripcion     String?   @db.NVarChar(Max)
+  HumedadSeco     String?   @db.NVarChar(50)
+  MermaAgua       String?   @db.NVarChar(50)
+  ServBasico      String?   @db.NVarChar(50)
+  Precio          String?   @db.NVarChar(50)
+  PrecioMinimo    String?   @db.NVarChar(50)
+  PrecioMaximo    String?   @db.NVarChar(50)
+  Estado          Boolean?
+  EstadoMM        Boolean?
+  MMHumedadSeco   String?   @db.NVarChar(50)
+  MMMermaAguna    String?   @db.NVarChar(50)
+  MMServBasico    String?   @db.NVarChar(50)
+  MMPrecio        String?   @db.NVarChar(50)
+  PrecioVenta     Decimal?  @db.Decimal(8, 2)
+  FechaCreado     DateTime? @db.DateTime
+  FechaModificado DateTime? @db.DateTime
+}
+
+model Producto_Formula {
+  IdProducto  Int      @id(map: "PK_Producto_Formula")
+  HumedadSeco Decimal? @db.Decimal(18, 2)
+  MermaAgua   Decimal? @db.Decimal(18, 2)
+  ServBasico  Decimal? @db.Decimal(18, 2)
+  Precio      Decimal? @db.Decimal(18, 2)
+}
+
+model Producto_MM {
+  IdProducto    Int      @id(map: "PK_Producto_MM")
+  PrecioMinimo  Decimal? @db.Decimal(18, 2)
+  PrecioMaximo  Decimal? @db.Decimal(18, 2)
+  MMHumedadSeco Decimal? @db.Decimal(18, 2)
+  MMMermaAgua   Decimal? @db.Decimal(18, 2)
+  MMServBasico  Decimal? @db.Decimal(18, 2)
+  MMPrecio      Decimal? @db.Decimal(18, 2)
+  EstadoMM      Boolean?
+}
+
+model Proveedores {
+  IDProveedores Int     @id(map: "PK_Proveedores") @default(autoincrement())
+  Nombres       String? @db.NVarChar(250)
+  CI            String? @db.NVarChar(250)
+  Telefono      String? @db.NVarChar(50)
+  Telefono2     String? @db.NVarChar(50)
+}
+
+model ReferenciaPersona {
+  IDReferencia Int     @id(map: "PK_ReferenciaPersona") @default(autoincrement())
+  Nombres      String? @db.NVarChar(250)
+  CI           String? @db.NVarChar(50)
+}
+
+model Retencion {
+  ID              Int       @id(map: "PK_Retencion")
+  Retencion       Decimal?  @db.Decimal(18, 3)
+  Detalle         String?   @db.NVarChar(250)
+  FechaCreado     DateTime? @db.DateTime
+  FechaModificado DateTime? @db.DateTime
+}
+
+model Romana {
+  IDRomana    Int       @id(map: "PK_Romana") @default(autoincrement())
+  IDLocal     Int?
+  IDCliente   Int?
+  IDProducto  Int?
+  Comprobante String?   @db.NVarChar(50)
+  CodSalida   String?   @db.NVarChar(50)
+  CodDia      String?   @db.NVarChar(50)
+  Humedad     Decimal?  @db.Decimal(18, 2)
+  Impureza    Decimal?  @db.Decimal(18, 2)
+  Quintales   Decimal?  @db.Decimal(18, 2)
+  Digita      String?   @db.NVarChar(Max)
+  Fecha       DateTime? @db.Date
+  PesoSaco    Decimal?  @db.Decimal(18, 2)
+}
+
+model RomanaBorrado {
+  Id         Int       @id(map: "PK_RomanaBorrado") @default(autoincrement())
+  Cod        Int?
+  Cliente    String?   @db.NVarChar(Max)
+  Producto   String?   @db.NVarChar(Max)
+  Quintales  String?   @db.NVarChar(Max)
+  Precio     String?   @db.NVarChar(Max)
+  ValorPagar String?   @db.NVarChar(Max)
+  Humedad    String?   @db.NVarChar(Max)
+  Impureza   String?   @db.NVarChar(Max)
+  Digita     String?   @db.NVarChar(Max)
+  Detalle    String?   @db.NVarChar(Max)
+  FechaHora  DateTime? @db.DateTime
+}
+
+model RomanaComprobante {
+  IDRomana      Int       @id(map: "PK_RomanaComprobante")
+  Precio        Decimal?  @db.Decimal(10, 2)
+  ValorTotal    Decimal?  @db.Decimal(10, 2)
+  RetencionReal Decimal?  @db.Decimal(10, 2)
+  ValorPagar    Decimal?  @db.Decimal(10, 2)
+  Efectivo      Decimal?  @db.Decimal(10, 2)
+  Cheque        Decimal?  @db.Decimal(10, 2)
+  Pendiente     Decimal?  @db.Decimal(10, 2)
+  FechaHoraPago DateTime? @db.DateTime
+  Fecha         DateTime? @db.Date
+}
+
+model ServicioEntrada {
+  IDServicioEntrada Int       @id(map: "PK_ServicioEntrada") @default(autoincrement())
+  IDLocal           Int?
+  IDCliente         Int?
+  IDSubProducto     Int?
+  CodSalida         String    @db.NVarChar(50)
+  CodDia            String?   @db.NVarChar(50)
+  Digita            String?   @db.NVarChar(Max)
+  Bascula           String?   @db.NVarChar(Max)
+  Producto          String?   @db.NVarChar(Max)
+  Chofer            String?   @db.NVarChar(Max)
+  Placa             String?   @db.NVarChar(Max)
+  PesoEntrada       Decimal?  @db.Decimal(10, 2)
+  Precio            Decimal?  @db.Decimal(18, 2)
+  Descripcion       String?   @db.NVarChar(Max)
+  FechaHora         DateTime? @db.DateTime
+  Fecha             DateTime? @db.Date
+  Estado            Boolean?
+  TipoServicio      Boolean?
+}
+
+model ServicioEPago {
+  IDPago    Int       @id(map: "PK_ServicioEPago")
+  Digita    String?   @db.NVarChar(Max)
+  PesoTotal Decimal?  @db.Decimal(18, 2)
+  Precio    Decimal?  @db.Decimal(18, 2)
+  VAPagar   Decimal?  @db.Decimal(18, 2)
+  FechaHora DateTime? @db.DateTime
+  Fecha     DateTime? @db.Date
+}
+
+model ServicioProducto {
+  ServicioProductoID Int     @id(map: "PK_ServicioProducto") @default(autoincrement())
+  Nombre             String? @db.NVarChar(Max)
+}
+
+model ServicioSalida {
+  IDServicioSalida  Int       @id(map: "PK_ServicioSalida") @default(autoincrement())
+  IDServicioEntrada Int?
+  Digita            String?   @db.NVarChar(Max)
+  PesoSalida        Decimal?  @db.Decimal(10, 2)
+  PesoNeto          Decimal?  @db.Decimal(10, 2)
+  FechaHora         DateTime? @db.DateTime
+  Fecha             DateTime? @db.Date
+}
+
+model sysdiagrams {
+  name         String @db.NVarChar(128)
+  principal_id Int
+  diagram_id   Int    @id(map: "PK__sysdiagr__C2B05B61F24C559A") @default(autoincrement())
+  version      Int?
+  definition   Bytes?
+
+  @@unique([principal_id, name], map: "UK_principal_name")
+}
+
+model TransaccionCompra {
+  IDTransaccionCompra Int       @id(map: "PK_TransaccionCompra") @default(autoincrement())
+  IDBoletoEntrada     Int?
+  IDCheque            String?   @db.NVarChar(10)
+  IDDeposito          String?   @db.NVarChar(10)
+  Anticipo            Decimal?  @db.Decimal(18, 2)
+  Efectivo            Decimal?  @db.Decimal(18, 2)
+  Cheque              Decimal?  @db.Decimal(18, 2)
+  Pendiente           Decimal?  @db.Decimal(18, 2)
+  Fecha               DateTime? @db.DateTime
+}
+
+model TransaccionVenta {
+  IDTransaccionVenta   Int       @id(map: "PK_TransaccionVenta") @default(autoincrement())
+  IDBoletoEntradaVenta Int?
+  IDChequeR            String?   @db.NVarChar(10)
+  IDDepositoR          String?   @db.NVarChar(10)
+  Efectivo             Decimal?  @db.Decimal(18, 2)
+  Deposito             Decimal?  @db.Decimal(18, 2)
+  Cheque               Decimal?  @db.Decimal(18, 2)
+  Pendiente            Decimal?  @db.Decimal(18, 2)
+  Fecha                DateTime? @db.DateTime
+}
+
+model Usuario {
+  IDUsuario     Int      @id(map: "PK_Usuario") @default(autoincrement())
+  UsuarioRolId  Int?
+  IDLocal       Int?
+  NombreUsuario String?  @db.NVarChar(Max)
+  Clave         String?  @db.NVarChar(Max)
+  RolUsuario    String?  @db.NVarChar(Max)
+  Estado        Boolean?
+}
+
+model Usuario_Rol {
+  UsuarioRolId Int     @id(map: "PK_Usuario_Rol") @default(autoincrement())
+  Descripcion  String? @db.NVarChar(100)
+}
+
+model UsuarioConeccion {
+  IDHorasConeccion Int       @id(map: "PK_UsuarioConeccion") @default(autoincrement())
+  Usuario          String?   @db.NVarChar(Max)
+  Detalle          String?   @db.NVarChar(Max)
+  Fecha            DateTime? @db.DateTime
+}
+
+model UsuarioModificaciones {
+  IDModificaciones Int       @id(map: "PK_UsuarioModificaciones") @default(autoincrement())
+  Detalle          String?   @db.NVarChar(Max)
+  Fecha            DateTime? @db.DateTime
+  Usuario          String?   @db.NVarChar(Max)
+  IDLocal          Int?
+}
+
+model Venta_Bodeguita_Pago {
+  IdVentaBodeguita    Int       @id(map: "PK_Venta_Bodeguita_Pago")
+  BodeguitaTipoPagoId Int?
+  IdBanco             Int?
+  Cantidad            Decimal?  @db.Decimal(18, 2)
+  NDocumento          String?   @db.NVarChar(50)
+  Nota                String?   @db.NVarChar(250)
+  Fecha               DateTime? @db.DateTime
+}
+
+model Venta_Bodeguita_Pago_Tipo {
+  BodeguitaTipoPagoId Int     @id(map: "PK_Venta_Bodeguita_Tipo_Pago") @default(autoincrement())
+  Description         String? @db.NVarChar(100)
+}
+
+model Venta_Kardex {
+  idVentaKardex     Int       @id(map: "PK_Venta_Kardex") @default(autoincrement())
+  idVentaKardexTipo Int?
+  idMovimiento      Int?
+  idBoletoDetalle   Int?
+  idCliente         Int?
+  idChofer          Int?
+  idLocal           Int?
+  porcenRetencion   Decimal?  @db.Decimal(18, 2)
+  retencion         Decimal?  @db.Decimal(18, 2)
+  total             Decimal?  @db.Decimal(18, 2)
+  debe              Decimal?  @db.Decimal(18, 2)
+  haber             Decimal?  @db.Decimal(18, 2)
+  fecha             DateTime? @db.DateTime
+}
+
+model Venta_Kardex_Pago {
+  idVentaKardexPago     Int       @id(map: "PK_Venta_Kardex_Pago") @default(autoincrement())
+  idVentaKardexPagoTipo Int?
+  idVentaKardex         Int?
+  idMovimiento          Int?
+  idVariable            Int?
+  cantidad              Decimal?  @db.Decimal(18, 2)
+  nDocumento            String?   @db.NVarChar(50)
+  nota                  String?   @db.NVarChar(250)
+  fecha                 DateTime? @db.DateTime
+}
+
+model Venta_Kardex_Pago_Tipo {
+  idVentaKardexPagoTipo Int                @id(map: "PK_Venta_Kardex_Pago_Tipo") @default(autoincrement())
+  idVentaKardexTipo     Int?
+  descripcion           String?            @db.NVarChar(50)
+  Venta_Kardex_Tipo     Venta_Kardex_Tipo? @relation(fields: [idVentaKardexTipo], references: [idVentaKardexTipo], onDelete: NoAction, onUpdate: NoAction, map: "FK_Venta_Kardex_Pago_Tipo_Venta_Kardex_Tipo")
+}
+
+model Venta_Kardex_Tipo {
+  idVentaKardexTipo      Int                      @id(map: "PK_Venta_Kardex_Tipo") @default(autoincrement())
+  descripcion            String?                  @db.NVarChar(50)
+  Venta_Kardex_Pago_Tipo Venta_Kardex_Pago_Tipo[]
+}
+
+model Venta_Pago_Adelantado {
+  idPagoAdelantado Int       @id(map: "PK_Venta_Pago_Adelantado") @default(autoincrement())
+  idLocal          Int?
+  idUser           Int?
+  idCliente        Int?
+  entra            Decimal?  @db.Decimal(18, 2)
+  sale             Decimal?  @db.Decimal(18, 2)
+  fecha            DateTime? @db.DateTime
+}
+
+model Venta_Pago_Adelantado_Deposito {
+  idDeposito       Int       @id(map: "PK_Venta_Pago_Adelantado_Deposito") @default(autoincrement())
+  idPagoAdelantado Int?
+  idBanco          Int?
+  cantidad         Decimal?  @db.Decimal(18, 2)
+  nDocumento       String?   @db.NVarChar(50)
+  nota             String?   @db.NVarChar(250)
+  postFecha        DateTime? @db.Date
+  fecha            DateTime? @db.DateTime
+}
+
+model Venta_Pago_Adelantado_Efectivo {
+  idEfectivo       Int      @id(map: "PK_Venta_Pago_Adelantado_Efectivo") @default(autoincrement())
+  idPagoAdelantado Int?
+  cantidad         Decimal? @db.Decimal(18, 2)
+}
+
+model Venta_Pago_Adelantado_Transfer {
+  idTransfer       Int       @id(map: "PK_Venta_Pago_Adelantado_Transfer") @default(autoincrement())
+  idPagoAdelantado Int?
+  idBanco          Int?
+  cantidad         Decimal?  @db.Decimal(18, 2)
+  nDocumento       String?   @db.NVarChar(50)
+  nota             String?   @db.NVarChar(250)
+  postFecha        DateTime? @db.Date
+  fecha            DateTime? @db.DateTime
+}
+
+model Venta_Producto {
+  idBoletoDetalle Int       @id(map: "PK_Venta_Producto")
+  idCliente       Int?
+  idLocal         Int?
+  Precio          Decimal?  @db.Decimal(18, 2)
+  vAPagar         Decimal?  @db.Decimal(18, 2)
+  ValorTotal      Decimal?  @db.Decimal(18, 2)
+  Retencion       Decimal?  @db.Decimal(18, 2)
+  Factura         String?   @db.NVarChar(150)
+  PesoPagar       Decimal?  @db.Decimal(18, 2)
+  Fecha           DateTime? @db.DateTime
+  estado          Boolean?
+}
+
+model Venta_Producto_Retencion {
+  idVenta_Producto_Reten Int  @id(map: "PK_Venta_Producto_Retencion") @default(autoincrement())
+  idBoletoDetalle        Int?
+  retencion              Int?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Venta_TipoPago_Conector {
+  idVentaTPagoConector Int?
+  idVentaTPago         Int?
+  idCheque             Int?
+  idDeposito           Int?
+  idTransfer           Int?
+
+  @@ignore
+}
+
+model Venta_Transaccion_Detalle {
+  idVTransaccionDetalle Int       @id(map: "PK_Venta_Transaccion_Detalle") @default(autoincrement())
+  idUser                Int?
+  idAsientoDetalle      Int?
+  descripcion           String?   @db.NVarChar(500)
+  fecha                 DateTime? @db.DateTime
+  multiple              Boolean?
+}
+
+model Venta_Transaccion_Pago {
+  idVentaTPago          Int      @id(map: "PK_Venta_Transaccion_Pago") @default(autoincrement())
+  idBoletoDetalle       Int?
+  idVTransaccionDetalle Int?
+  CantidadParcial       Decimal? @db.Decimal(18, 2)
+  Cantidad              Decimal? @db.Decimal(18, 2)
+}
+
+model Venta_Transaccion_TipoPago {
+  idVTransaccionTipoPago Int     @id(map: "PK_Venta_Transaccion_TipoPago") @default(autoincrement())
+  descripcion            String? @db.NVarChar(150)
+}
+
+model Venta_Transaccion_TipoPago_Anticipado {
+  idAnticipado          Int       @id(map: "PK_Venta_Transaccion_TipoPago_Anticipado") @default(autoincrement())
+  idVTransaccionDetalle Int?
+  idPagoAdelantado      Int?
+  cantidad              Decimal?  @db.Decimal(18, 2)
+  fecha                 DateTime? @db.DateTime
+}
+
+model Venta_Transaccion_TipoPago_Deposito {
+  idDeposito            Int       @id(map: "PK_Venta_Deposito") @default(autoincrement())
+  idVTransaccionDetalle Int?
+  idBanco               Int?
+  cantidad              Decimal?  @db.Decimal(18, 2)
+  nDocumento            String?   @db.NVarChar(50)
+  nota                  String?   @db.NVarChar(250)
+  postFecha             DateTime? @db.Date
+  fecha                 DateTime? @db.DateTime
+}
+
+model Venta_Transaccion_TipoPago_Efectivo {
+  idEfectivo            Int      @id(map: "PK_Venta_Transaccion_TipoPago_Efectivo") @default(autoincrement())
+  idVTransaccionDetalle Int?
+  cantidad              Decimal? @db.Decimal(18, 2)
+}
+
+model Venta_Transaccion_TipoPago_Transfer {
+  idTransfer            Int       @id(map: "PK_Venta_Transfer") @default(autoincrement())
+  idVTransaccionDetalle Int?
+  idBanco               Int?
+  cantidad              Decimal?  @db.Decimal(18, 2)
+  nDocumento            String?   @db.NVarChar(50)
+  nota                  String?   @db.NVarChar(250)
+  postFecha             DateTime? @db.Date
+  fecha                 DateTime? @db.DateTime
+}
+
+model VentaAClienteBorrados {
+  IDVAClienteBorrado Int       @id(map: "PK_VentaAClienteBorrados_1") @default(autoincrement())
+  IDVentasAdelantada Int
+  IDMovimiento       Int?
+  Cantidad           Decimal?  @db.Decimal(18, 2)
+  FechaHora          DateTime? @db.DateTime
+}
+
+model VentaAClientePendiente {
+  IDVClientePendiente Int       @id(map: "PK_VentaAClientePendiente") @default(autoincrement())
+  IDVentasAdelantada  Int?
+  IDMovimiento        Int?
+  Cantidad            Decimal?  @db.Decimal(18, 2)
+  FechaHora           DateTime? @db.DateTime
+}
+
+model VentaAdelantadaClientes {
+  IDVentasAdelantada Int      @id(map: "PK_VentasAdelantadasClientes") @default(autoincrement())
+  IDCliente          Int?
+  Cantidad           Decimal? @db.Decimal(18, 2)
+}
+
+model VentaAdelantadaID {
+  IDVentaDelantada Int  @id(map: "PK_VentaAdelantadaID") @default(autoincrement())
+  IDCuentaContable Int?
+}
+
+model VentaBodeguita {
+  IDVentaBodeguita Int       @id(map: "PK_Bodeguita") @default(autoincrement())
+  IdLocal          Int?
+  IDProducto       Int?
+  IdCliente        Int?
+  IdComodin        Int?
+  Cliente          String?   @db.NVarChar(Max)
+  Humedad          Decimal?  @db.Decimal(18, 8)
+  Precio           Decimal?  @db.Decimal(18, 8)
+  Quintales        Decimal?  @db.Decimal(18, 8)
+  Efectivo         Decimal?  @db.Decimal(18, 8)
+  Cheque           Decimal?  @db.Decimal(18, 8)
+  Transferencia    Decimal?  @db.Decimal(18, 8)
+  Deposito         Decimal?  @db.Decimal(18, 8)
+  NotaDebito       Decimal?  @db.Decimal(18, 8)
+  Fecha            DateTime? @db.Date
+  FechaHora        DateTime? @db.DateTime
+}
+
+model VentaDetallesClientes {
+  IDDetalleVentas       Int       @id(map: "PK_VentaDetallesClientes") @default(autoincrement())
+  IDBoletoEntradaVenta  Int?
+  Factura               String?   @db.NVarChar(Max)
+  Digita                String?   @db.NVarChar(Max)
+  Efectivo              Decimal?  @db.Decimal(18, 2)
+  Deposito              Decimal?  @db.Decimal(18, 2)
+  Cheque                Decimal?  @db.Decimal(18, 2)
+  Pendiente             Decimal?  @db.Decimal(18, 2)
+  FechaHora             DateTime? @db.DateTime
+  Fecha                 DateTime? @db.Date
+  IDCheque              String?   @db.NVarChar(50)
+  IDCuentaContableMenor String?   @db.NVarChar(50)
+  ComprobanteDeposito   String?   @db.NVarChar(50)
+}
+
+model VentaGeneral {
+  IDVentaGeneral Int       @id(map: "PK_VentaGeneral") @default(autoincrement())
+  IDCliente      Int?
+  IDProducto     Int?
+  Humedad        Decimal?  @db.Decimal(18, 2)
+  Precio         Decimal?  @db.Decimal(18, 2)
+  Quintales      Decimal?  @db.Decimal(18, 2)
+  VAPagar        Decimal?  @db.Decimal(18, 2)
+  RetencionReal  Decimal?  @db.Decimal(18, 2)
+  Efectivo       Decimal?  @db.Decimal(18, 2)
+  Cheque         Decimal?  @db.Decimal(18, 2)
+  Deposito       Decimal?  @db.Decimal(18, 2)
+  Fecha          DateTime? @db.Date
+  FechaHora      DateTime? @db.DateTime
+}
+
+model Zona {
+  IDZona  Int     @id(map: "PK_Zona") @default(autoincrement())
+  Detalle String? @db.NVarChar(150)
 }

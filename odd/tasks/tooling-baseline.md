@@ -103,6 +103,8 @@ connection time, with a message that points at the missing variable.
 - [x] Allow Prisma build scripts in `pnpm-workspace.yaml`.
 - [x] `prisma/schema.prisma`, `prisma.config.ts`, `lib/db.ts`, db scripts.
 - [x] `prisma validate` + `db:generate` + typecheck + build green.
+- [x] `db:pull` against the real SQL Server.
+- [x] Regenerate the client against the introspected schema.
 
 ## Evidence
 
@@ -132,6 +134,48 @@ Prisma:
   **The existing `DATABASE_URL` format needs no change.**
 - `tsc --noEmit` clean; `next build` green.
 
+### Introspection against the real database
+
+`pnpm db:pull` against `BDComercial` succeeded:
+
+```
+Datasource "db": SQL Server database
+✔ Introspected 311 models and wrote them into prisma\schema.prisma in 997ms
+```
+
+Six tables were skipped because they lack a usable unique identifier:
+`CierreInventarioExcedente`, `Conta_Asiento_Detalle_Tipo`,
+`Conta_Cuenta_Banco_Enlace`, `Conta_Gasto_Factura_Pasivo`, `FechaMeses`,
+`Venta_TipoPago_Conector`. They get no Prisma model, so any access to them must
+be raw SQL (`$queryRaw`).
+
+`schema.prisma` is now 3087 lines and `db pull` added
+`previewFeatures = ["partialIndexes"]` to the generator on its own.
+`pnpm db:generate` produced a 17 MB client (gitignored). TypeScript check went
+from ~2.3s to ~6.9s; `next build` still green.
+
+### Connection doc cross-checked against reality
+
+`model Usuario` matches `DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md` §4 exactly:
+`IDUsuario` (PK), `UsuarioRolId`, `IDLocal`, `NombreUsuario`, `Clave`,
+`RolUsuario`, `Estado`.
+
+Two consequences the doc does not state:
+
+1. Every credential field is **nullable** — `NombreUsuario`, `Clave`,
+   `UsuarioRolId`, `IDLocal`, `Estado` are all `?`. Prisma types them
+   `string | null` / `boolean | null`, so the login flow must handle nulls
+   explicitly instead of assuming presence.
+2. `Clave` is a plaintext `NVarChar(Max)` column, consistent with the doc's
+   warning that the legacy compares passwords in text. It is a deliberate
+   compatibility constraint, not an oversight, and deserves a comment when the
+   auth code lands.
+
+There is no single `Venta` model; the sales data is spread across a family of
+tables (`CierreVentaDelDia`, `ComisionVenta`, `ComprobanteDepositoVenta`,
+`Conta_Asiento_Detalle_Venta`, and others). Any sales module starts by mapping
+that family, not by assuming one table.
+
 ## Open items
 
 - **`.env` does not exist yet.** Writing `.env.example` was blocked by the
@@ -140,13 +184,15 @@ Prisma:
   - `DATABASE_URL` — `sqlserver://HOST;port=1433;database=BDComercial;user=…;password=…;encrypt=false;trustServerCertificate=true`
   - `AUTH_SECRET` — JWT signing secret, must differ from comercial-web's.
   The user creates `.env` locally; it is gitignored.
-- **`pnpm db:pull` is unverified.** It needs real credentials and a reachable
-  SQL Server. Until it runs, there are zero Prisma models and `db` has no
-  delegates — the adapter path is proven only up to parse time, not end-to-end.
 - `lib/db.ts` follows the doc's `db` export convention but with the Prisma 7
   client and adapter. Section 2.3 of
   `DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md` is now stale and should be updated
   (not done — the doc is the user's artifact describing comercial-web).
+- `prisma/schema.prisma` is committed so schema drift is visible in diffs and
+  CI can generate without database access. The 17 MB generated client is not.
+- The six identifier-less tables cannot be reached through the Prisma Client.
+  Decide per case whether raw SQL is acceptable or the legacy table needs a
+  key (the latter is the WinForms system's call, not ours).
 - `pnpm add` warned that `eslint@9.39.5` is deprecated ("no longer supported"),
   meaning ESLint 10 is out. Separate upgrade, not in scope.
 - No test runner installed; verification is typecheck + build. That gap matters
