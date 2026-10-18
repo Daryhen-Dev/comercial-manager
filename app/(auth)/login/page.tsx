@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getBranches, type Branch } from "@/lib/auth/locales";
 import { LoginForm } from "./_components/login-form";
 
 const APP_NAME = "Comercial Manager";
@@ -26,18 +25,13 @@ const errorCopy: Record<string, ErrorCopy> = {
 
 const genericErrorCopy: ErrorCopy = {
   title: "Credenciales inválidas",
-  description: "Verificá tu usuario, contraseña y local, e intentá de nuevo.",
+  description: "Verificá tu usuario y contraseña, e intentá de nuevo.",
 };
 
-const databaseErrorCopy: ErrorCopy = {
-  title: "Base de datos no disponible",
-  description:
-    "No se pudo conectar con la base de datos. Intentá de nuevo más tarde.",
-};
-
-// The login page reads `searchParams` and the branch list from the database,
-// both uncached runtime data; with cacheComponents enabled it must opt out of
-// prerendering instead of streaming.
+// This page reads `searchParams`, which is uncached runtime data; with
+// cacheComponents enabled it must opt out of prerendering instead of streaming.
+// It does NOT touch the database: the branch is implicit in the auth layer, so
+// the login form stays usable even when SQL Server is unreachable.
 export const instant = false;
 
 export default async function LoginPage(props: PageProps<"/login">) {
@@ -46,17 +40,6 @@ export default async function LoginPage(props: PageProps<"/login">) {
   // searchParams values can be repeated, so `error` may arrive as `string[]`;
   // use the first occurrence when that happens.
   const errorParam = Array.isArray(error) ? error[0] : error;
-
-  // The login page must stay usable even when the database is down: degrade
-  // to an empty branch list with a visible notice instead of crashing.
-  let branches: Branch[] = [];
-  let databaseUnavailable = false;
-  try {
-    branches = await getBranches();
-  } catch {
-    databaseUnavailable = true;
-  }
-
   const message = (errorParam && (errorCopy[errorParam] ?? genericErrorCopy)) ?? null;
 
   return (
@@ -75,14 +58,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
               <AlertDescription>{message.description}</AlertDescription>
             </Alert>
           ) : null}
-          {databaseUnavailable ? (
-            <Alert variant="destructive">
-              <AlertTitle>{databaseErrorCopy.title}</AlertTitle>
-              <AlertDescription>{databaseErrorCopy.description}</AlertDescription>
-            </Alert>
-          ) : null}
           <LoginForm
-            branches={branches}
             callbackUrl={
               typeof callbackUrl === "string"
                 ? callbackUrl

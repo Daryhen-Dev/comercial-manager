@@ -44,12 +44,45 @@ not taken from the document.
 
 ## Decisions
 
-- **Admin gate compares `RolUsuario === "ADMINISTRADOR"`**, the real value found
-  in the database. Not a guess, not a boolean.
-- **Credentials match on `NombreUsuario` + `IDLocal` together**, per the doc: the
-  user chooses the branch at login, and the same username can exist per branch.
+- **Admin gate is `UsuarioRolId === 1`**, the legacy identifier for
+  administrators. `RolUsuario` ("ADMINISTRADOR") is the display name and is NOT
+  authoritative.
+- **`IDLocal` is implicit: the constant `ID_LOCAL_IMPLICITO = 1`.** The user does
+  not choose a branch at login. The lookup still pins `IDLocal` because a
+  username can repeat across branches.
 - **`Estado !== true` is a rejection.** Because the column is nullable, the check
   is `!== true` (rejects `false` and `null`), not `=== false`.
+
+### Correction: the branch selector was removed, contradicting doc §4.1
+
+The first implementation followed `DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md` §4.1
+literally: "match por NombreUsuario + IDLocal (el usuario elige sucursal en el
+login)", with a branch picker fed by the `Local` table. The product decision
+overrode that: this system serves one branch, so `IDLocal` is a constant and the
+form asks only for user and password.
+
+Measured consequences, from live aggregates:
+
+- Only **7 of the 35 administrators** belong to `IDLocal = 1` (VENTANAS).
+  Administrators in branches 2-8 cannot log in. This is intended, and changing
+  it is a code change plus a redeploy, not a configuration toggle.
+- `UsuarioRolId` distributes as `1` → 33 users (all ADMINISTRADOR) and `2` → 81
+  users (all CAJERO), but **18 users have `UsuarioRolId = null`**, and 2 of them
+  are `ADMINISTRADOR`. The strict `UsuarioRolId === 1` gate **excludes those 2**.
+  That trade-off was chosen deliberately over a `RolUsuario` fallback.
+- Data anomaly worth knowing: 1 user has `IDLocal = 0`, which does not exist in
+  the `Local` table (it starts at 1).
+
+Side effect, and it is a good one: the login page no longer touches the database
+at all, so it stays usable when SQL Server is unreachable. The previous version
+needed a try/catch to degrade to an empty selector.
+
+### Open contradiction to resolve in the document
+
+`DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md` §4.1 still states that the user picks
+the branch, and §4.5 that the gate uses `session.user.UsuarioRolId/RolUsuario`.
+Both are now stale with respect to this system. Not edited here: the document is
+the user's artifact describing `comercial-web`.
 - **`Clave` compared in plaintext on purpose.** This deserves a comment in the
   code explaining it is a compatibility constraint with the WinForms system, so
   a future reader does not "fix" it into a hash and lock everyone out.
@@ -77,9 +110,9 @@ Work unit A — auth core:
 Work unit B — login and gate:
 
 - [x] Server-side query returning `{ IDLocal, Local }` for the branch selector.
+      **Superseded**: the selector was removed and `lib/auth/locales.ts` deleted.
 - [x] `app/(auth)/login/page.tsx`.
-- [x] Login form: RHF + Zod, three-generic `useForm`, branch select,
-      `signIn("credentials")` with error handling.
+- [x] Login form: RHF + Zod, `signIn("credentials")` with error handling.
 - [x] `app/(main)/layout.tsx` with the server-side administrator check.
 - [x] Move the current starter page to `(main)` so `/` is protected.
 
@@ -179,6 +212,21 @@ list is not mocked; those names come from the live `Local` table.
 **Not verified: a successful login.** That needs real credentials, which are not
 in this session. Everything up to the credentials POST is proven; the happy path
 of `authorize` returning a user is not.
+
+### Post-correction verification (implicit IDLocal, UsuarioRolId gate)
+
+| Check | Result |
+| --- | --- |
+| `GET /login` | `200` |
+| Form controls | `login-usuario` and `login-clave` present, `login-idlocal` absent |
+| Branch names in HTML | none (VENTANAS / PILADORA / VINCES all absent) |
+| `POST /api/auth/callback/credentials` | `302 → /login?error=CredentialsSignin&code=credentials` |
+| `GET /api/auth/session` | `200 null` |
+| Unexpected server errors | none |
+
+The absent branch names prove the login page no longer queries `Local`, while
+the `CredentialsSignin` redirect proves `authorize` still executes the pinned
+lookup against SQL Server. `npx tsc --noEmit` and `next build` both clean.
 
 ## Open items
 

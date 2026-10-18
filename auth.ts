@@ -4,6 +4,11 @@ import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { db } from "@/lib/db";
 
+// This system only serves one branch, so the local is implicit rather than
+// chosen at login. A username can repeat across branches, so the lookup still
+// has to pin IDLocal. Changing branches is a code change on purpose.
+const ID_LOCAL_IMPLICITO = 1;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
@@ -11,36 +16,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         usuario: { label: "Usuario", type: "text" },
         clave: { label: "Contraseña", type: "password" },
-        idLocal: { label: "Local", type: "text" },
       },
       async authorize(credentials) {
         try {
           const usuario = credentials?.usuario;
           const clave = credentials?.clave;
-          const idLocalRaw = credentials?.idLocal;
 
           if (
             typeof usuario !== "string" ||
             typeof clave !== "string" ||
-            typeof idLocalRaw !== "string" ||
             usuario === "" ||
-            clave === "" ||
-            idLocalRaw === ""
+            clave === ""
           ) {
             return null;
           }
 
-          const idLocal = Number(idLocalRaw);
-          if (!Number.isInteger(idLocal)) {
-            return null;
-          }
-
-          // A username can repeat across branches, so match NombreUsuario and
-          // IDLocal together.
           const row = await db.usuario.findFirst({
             where: {
               NombreUsuario: usuario,
-              IDLocal: idLocal,
+              IDLocal: ID_LOCAL_IMPLICITO,
             },
           });
 
@@ -64,7 +58,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // `Usuario` has no branch name, only IDLocal; resolve the display
           // name from `Local`.
           const local = await db.local.findUnique({
-            where: { IDLocal: idLocal },
+            where: { IDLocal: ID_LOCAL_IMPLICITO },
           });
 
           return {
