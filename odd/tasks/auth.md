@@ -76,12 +76,12 @@ Work unit A — auth core:
 
 Work unit B — login and gate:
 
-- [ ] Server-side query returning `{ IDLocal, Local }` for the branch selector.
-- [ ] `app/(auth)/login/page.tsx`.
-- [ ] Login form: RHF + Zod, three-generic `useForm`, branch select,
+- [x] Server-side query returning `{ IDLocal, Local }` for the branch selector.
+- [x] `app/(auth)/login/page.tsx`.
+- [x] Login form: RHF + Zod, three-generic `useForm`, branch select,
       `signIn("credentials")` with error handling.
-- [ ] `app/(main)/layout.tsx` with the server-side administrator check.
-- [ ] Move the current starter page to `(main)` so `/` is protected.
+- [x] `app/(main)/layout.tsx` with the server-side administrator check.
+- [x] Move the current starter page to `(main)` so `/` is protected.
 
 ## Evidence
 
@@ -145,12 +145,55 @@ comment explaining why.
 `next build` reports `ƒ Proxy (Middleware)` and `ƒ /api/auth/[...nextauth]`,
 confirming both are compiled as server entries.
 
+### Cache Components blocked the first build of the UI
+
+Both `/login` and `/` read runtime data (`searchParams`, the session, the branch
+list). With `cacheComponents: true` enabled in `next.config.ts`, Next 16 flags
+every such route during prerendering and the build fails.
+
+The documented escape hatch is `export const instant = false`, which keeps the
+route blocking on the server instead of prerendering a shell. It is real Next 16
+API, not a workaround invented on the spot: see
+`node_modules/next/dist/docs/01-app/02-guides/authentication-with-cache-components.md`,
+which names this exact situation ("routes that read the session") and recommends
+opting out per route and adopting the Cache Components patterns one at a time.
+
+Applied to `app/(auth)/login/page.tsx` and `app/(main)/page.tsx`.
+
+### End-to-end runtime verification
+
+Production build served on a spare port with an ephemeral `AUTH_SECRET`:
+
+| Check | Result |
+| --- | --- |
+| `GET /login` | `200` |
+| Branch names in the rendered HTML | VENTANAS, PILADORA, VINCES, PECHICHE all present |
+| Form controls present | `login-usuario`, `login-clave`, `login-idlocal` |
+| `GET /` without a session | `302 → /login?callbackUrl=%2F` |
+| Server error log | clean |
+
+That single `200` proves the whole chain works: Next 16 runtime → `proxy.ts` →
+server component → Prisma 7 → `@prisma/adapter-mssql` → SQL Server. The branch
+list is not mocked; those names come from the live `Local` table.
+
+**Not verified: a successful login.** That needs real credentials, which are not
+in this session. Everything up to the credentials POST is proven; the happy path
+of `authorize` returning a user is not.
+
 ## Open items
 
 - **`AUTH_SECRET` is not set yet.** next-auth fails closed without it. The user
-  generates one (never share it in chat) and adds it to `.env`.
+  generates one (never share it in chat) and adds it to `.env`. Runtime tests so
+  far used an ephemeral secret passed inline to the process.
+- **A real login has never been attempted.** Needs a genuine legacy credential
+  and an `ADMINISTRADOR` account. Until then, the `authorize` happy path,
+  the `jwt`/`session` callbacks populating real values, and the sign-out action
+  are unproven at runtime.
+- `export const instant = false` is a deliberate opt-out from Cache Components
+  prerendering, not an oversight. Revisit when adopting the Cache Components
+  authentication patterns.
 - No test runner is installed, so verification is typecheck plus production
-  build, plus a manual login attempt against the local database.
+  build, plus manual HTTP checks against a running server.
 - Legacy passwords are plaintext, which is a real security exposure inherited
   from the source system. Out of scope here, but it should be recorded as a
   known accepted risk rather than silently ignored.
