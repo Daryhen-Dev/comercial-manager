@@ -80,6 +80,9 @@ Generated state:
 Build passed twice: once right after `init`, once after adding
 `button` + `dialog` (`next build`, Turbopack, TypeScript clean).
 
+Committed as `5ab53c1` — `chore: bootstrap Next 16 app with shadcn/ui on Base
+UI` (repository had no prior history; this is the initial commit).
+
 ## Defect found and fixed
 
 `init` printed "Updating fonts" but left `app/layout.tsx` untouched, and wrote a
