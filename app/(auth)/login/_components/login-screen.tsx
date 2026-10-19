@@ -22,12 +22,16 @@ type ErrorCopy = { title: string; hint: string };
 
 const CREDENTIALS_ERROR: ErrorCopy = {
   title: "Usuario o contraseña incorrectos",
-  hint: "Verificá los datos. Si tu usuario pertenece a otra sucursal, no puede ingresar acá.",
+  hint: "Verificá los datos e intentá de nuevo.",
 };
 
+// Deliberately does not say "administrator" or name the system's purpose: a
+// failed sign-in must not confirm to a stranger that they reached a sensitive
+// surface. The person is already authenticated here, so the recovery path is
+// the contact line, not a description of what they are missing.
 const FORBIDDEN_ERROR: ErrorCopy = {
-  title: "Acceso restringido",
-  hint: "Tu cuenta no tiene permisos de administrador para este sistema.",
+  title: "Acceso no habilitado",
+  hint: "Esta cuenta no puede ingresar. Contactá al encargado del sistema.",
 };
 
 /**
@@ -78,18 +82,22 @@ export function LoginScreen({
         redirectTo: destination,
       });
 
-      if (result?.ok) {
-        // The ring closes into a circumference before the door opens. This is
-        // the surface's one authored moment, so it is allowed to be seen.
-        setFrameState("granted");
-        await new Promise((resolve) => setTimeout(resolve, 280));
-        router.push(destination);
-        router.refresh();
+      if (result?.error || !result?.url) {
+        // next-auth v5 sets `ok` from the HTTP status of the POST, which is 200
+        // even when the credentials are wrong. The outcome is carried by
+        // `error`, and `url` is null whenever there is one. Checking `ok`
+        // alone sent failed attempts down the success path.
+        setFrameState("idle");
+        setError(CREDENTIALS_ERROR);
         return;
       }
 
-      setFrameState("idle");
-      setError(CREDENTIALS_ERROR);
+      // The ring closes into a circumference before the door opens. This is
+      // the surface's one authored moment, so it is allowed to be seen.
+      setFrameState("granted");
+      await new Promise((resolve) => setTimeout(resolve, 280));
+      router.push(destination);
+      router.refresh();
     } catch {
       setFrameState("idle");
       setError({
@@ -105,7 +113,6 @@ export function LoginScreen({
         <div className={styles.inner}>
           <header className={styles.header}>
             <h1 className={styles.wordmark}>Comercial Manager</h1>
-            <p className={styles.subtitle}>Solo administradores.</p>
           </header>
 
           <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>

@@ -129,7 +129,6 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
 }
 
 .wordmark {
@@ -138,13 +137,6 @@
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.15;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.45;
-  color: var(--ink-soft);
 }
 
 .form {
