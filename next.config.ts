@@ -14,7 +14,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/adapter-mssql", "mssql", "tedious"],
   turbopack: {
     rules: {
-      "*.css": {
+      // Scoped to the global stylesheet on purpose. A `*.css` glob also matched
+      // `*.module.css`, and `as: "*.css"` forced those through as plain CSS:
+      // the file compiled and shipped, but the module exported no class names,
+      // so every `styles.x` was undefined and nothing applied.
+      "**/globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
