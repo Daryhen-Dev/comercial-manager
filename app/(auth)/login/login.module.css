@@ -1,0 +1,307 @@
+/* The door is dark, the workspace is light.
+   One idea: a luminous arc travels the frame and closes into a circumference
+   when the door opens. Ember (#FF8A3D) runs into jade (#2BD9A6). */
+
+@property --beam {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --arc {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 118deg;
+}
+
+.screen {
+  --from: #ff8a3d;
+  --to: #2bd9a6;
+  --ground: #07090c;
+  --ink: #f2f5f7;
+  --ink-soft: #a8b3bd;
+  --rule: rgb(255 255 255 / 0.13);
+
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+  color: var(--ink);
+  background:
+    radial-gradient(120% 80% at 50% 0%, #101821 0%, transparent 62%),
+    radial-gradient(90% 60% at 50% 110%, rgb(43 217 166 / 0.08) 0%, transparent 70%),
+    var(--ground);
+  /* Browser surfaces belong to the world too. */
+  accent-color: var(--to);
+  scrollbar-color: rgb(255 255 255 / 0.22) transparent;
+}
+
+.screen ::selection {
+  background: rgb(43 217 166 / 0.28);
+  color: var(--ink);
+}
+
+/* The frame is the ring host. Its 1px padding is the hairline the light runs on. */
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  padding: 1px;
+  border-radius: 1.375rem;
+  background: rgb(255 255 255 / 0.07);
+  box-shadow:
+    0 24px 60px -18px rgb(0 0 0 / 0.9),
+    0 0 70px -28px rgb(255 138 61 / 0.45),
+    0 0 110px -40px rgb(43 217 166 / 0.4);
+  transition: box-shadow 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--beam),
+    transparent 0deg,
+    transparent calc(360deg - var(--arc)),
+    var(--from) calc(360deg - var(--arc) * 0.58),
+    var(--to) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: orbit 9s linear infinite;
+  transition: --arc 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The arc answers the hand: it reaches further while the form has focus. */
+.frame:focus-within::before {
+  --arc: 196deg;
+}
+
+/* Submission closes the ring into a full circumference. */
+.frame[data-state="submitting"]::before {
+  --arc: 360deg;
+  animation-duration: 2.4s;
+}
+
+.frame[data-state="granted"]::before {
+  --arc: 360deg;
+  animation-duration: 6s;
+}
+
+.frame[data-state="granted"] {
+  box-shadow:
+    0 24px 60px -18px rgb(0 0 0 / 0.9),
+    0 0 90px -18px rgb(43 217 166 / 0.55),
+    0 0 140px -40px rgb(43 217 166 / 0.35);
+}
+
+@keyframes orbit {
+  to {
+    --beam: 360deg;
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1.75rem 1.375rem 1.5rem;
+  border-radius: 1.3125rem;
+  background: linear-gradient(180deg, #0c1116 0%, #080b0f 100%);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+}
+
+.input {
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.75rem 0.875rem;
+  /* 16px minimum: anything smaller makes iOS zoom the viewport. */
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--ink);
+  caret-color: var(--to);
+  background: rgb(255 255 255 / 0.035);
+  border: 1px solid var(--rule);
+  border-radius: 0.625rem;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.input::placeholder {
+  color: #7f8b96;
+}
+
+.input:hover {
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.input:focus-visible {
+  border-color: var(--to);
+  background: rgb(43 217 166 / 0.06);
+  box-shadow: 0 0 0 3px rgb(43 217 166 / 0.18);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--from);
+  box-shadow: 0 0 0 3px rgb(255 138 61 / 0.16);
+}
+
+.submit {
+  width: 100%;
+  min-height: 3.25rem;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #06110d;
+  background: linear-gradient(96deg, var(--from) 0%, var(--to) 100%);
+  border: 0;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition:
+    filter 180ms ease,
+    transform 120ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.submit:disabled {
+  cursor: progress;
+  filter: saturate(0.55) brightness(0.78);
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border-radius: 0.625rem;
+  background: rgb(255 138 61 / 0.09);
+  box-shadow: inset 0 0 0 1px rgb(255 138 61 / 0.32);
+}
+
+.alertTitle {
+  margin: 0;
+  font-weight: 600;
+  color: #ffd9bd;
+}
+
+.alertHint {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.fieldError {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #ffb98a;
+}
+
+.footer {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #7f8b96;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 40rem) {
+  .inner {
+    padding: 2rem 1.75rem 1.75rem;
+  }
+
+  .wordmark {
+    font-size: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame::before {
+    animation: none;
+    --arc: 200deg;
+    transition: none;
+  }
+
+  .frame[data-state="submitting"]::before,
+  .frame[data-state="granted"]::before {
+    --arc: 360deg;
+  }
+
+  .submit,
+  .input,
+  .frame {
+    transition: none;
+  }
+}
