@@ -44,10 +44,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Local Pi runtime state
-.atl/
-
-# Agent hook configs bound to absolute paths on this machine
-/.codex/hooks.json
-/.cursor/hooks.json
-/.gemini/settings.json
+# Every dot-directory is local tooling or runtime state, never project source.
+# This keeps agent skill copies, hook configs and editor caches out of the repo.
+# `.github` is the single exception: it holds CI workflows and PR templates.
+.*/
+!.github/
