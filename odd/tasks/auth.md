@@ -79,10 +79,14 @@ needed a try/catch to degrade to an empty selector.
 
 ### Open contradiction to resolve in the document
 
-`DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md` §4.1 still states that the user picks
-the branch, and §4.5 that the gate uses `session.user.UsuarioRolId/RolUsuario`.
-Both are now stale with respect to this system. Not edited here: the document is
-the user's artifact describing `comercial-web`.
+`DOCUMENTACION-CONEXION-SISTEMA-ADMIN.md` §4.1 said the user picks the branch,
+and §4.5 said the gate uses `session.user.UsuarioRolId/RolUsuario`. Both were
+stale once the correction landed.
+
+**Resolved**: the document was rewritten to describe this system as implemented.
+It now records the implicit `IDLocal`, the strict `UsuarioRolId === 1` gate, the
+Prisma 7 connection chain, the `proxy.ts` convention, and a dedicated §8 table of
+divergences from comercial-web, so the two systems are not confused.
 - **`Clave` compared in plaintext on purpose.** This deserves a comment in the
   code explaining it is a compatibility constraint with the WinForms system, so
   a future reader does not "fix" it into a hash and lock everyone out.
