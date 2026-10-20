@@ -4,23 +4,6 @@
  */
 
 /**
- * Escapes T-SQL LIKE wildcards so user input is matched literally.
- *
- * The escape character is `!`, chosen instead of a backslash to avoid quoting
- * hazards between JS and SQL. It must match `ESCAPE N'!'` in the queries: change
- * one side and the other breaks.
- *
- * `!` is duplicated FIRST, so escaping itself does not corrupt the rest.
- */
-export function escapeLike(texto: string): string {
-  return texto
-    .replaceAll("!", "!!")
-    .replaceAll("%", "!%")
-    .replaceAll("_", "!_")
-    .replaceAll("[", "![");
-}
-
-/**
  * `d/M/yyyy H:mm` in UTC, built by hand: the database datetimes are treated as
  * UTC and displayed without any timezone conversion (project convention).
  *

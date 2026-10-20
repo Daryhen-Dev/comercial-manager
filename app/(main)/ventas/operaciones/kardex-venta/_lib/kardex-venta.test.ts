@@ -1,41 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  escapeLike,
-  formatFechaMovimiento,
-  formatFechaVenta,
-} from "./kardex-venta";
-
-describe("escapeLike", () => {
-  it("duplica el carácter de escape", () => {
-    expect(escapeLike("a!b")).toBe("a!!b");
-  });
-
-  it("escapa el comodín de porcentaje", () => {
-    expect(escapeLike("50%")).toBe("50!%");
-  });
-
-  it("escapa el comodín de guion bajo", () => {
-    expect(escapeLike("con_suma")).toBe("con!_suma");
-  });
-
-  it("escapa el corchete de apertura", () => {
-    expect(escapeLike("c[oco")).toBe("c![oco");
-  });
-
-  it("deja pasar texto plano sin acentos alterados", () => {
-    expect(escapeLike("CONSUMIDOR FINAL")).toBe("CONSUMIDOR FINAL");
-    expect(escapeLike("Ñustes - Pérez")).toBe("Ñustes - Pérez");
-  });
-
-  it("devuelve vacío para entrada vacía", () => {
-    expect(escapeLike("")).toBe("");
-  });
-
-  it("escapa varios comodines juntos", () => {
-    expect(escapeLike("50%_c[o]!")).toBe("50!%!_c![o]!!");
-  });
-});
+import { formatFechaMovimiento, formatFechaVenta } from "./kardex-venta";
 
 describe("formatFechaVenta", () => {
   it("usa d/M/yyyy H:mm sin ceros iniciales", () => {

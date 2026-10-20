@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Search } from "lucide-react";
 
@@ -38,35 +38,57 @@ export function KardexVentaLista() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<SaldosKardexVentaResult | null>(null);
   const [ordenTotal, setOrdenTotal] = useState<"asc" | "desc" | null>(null);
-  const peticionRef = useRef(0);
 
-  // Debounce 300 ms + latest-wins: a slow response for an older keystroke is
-  // discarded entirely instead of overwriting the current result.
+  // ONE load. The grid filters and totals in the browser, so typing never
+  // re-queries and nothing the user types reaches SQL.
   useEffect(() => {
-    const timer = window.setTimeout(async () => {
-      const miPeticion = ++peticionRef.current;
+    let cancelado = false;
+
+    void (async () => {
       setLoading(true);
       try {
-        const result = await getSaldosKardexVenta(filtro, soloConSaldo);
-        if (peticionRef.current !== miPeticion) return;
+        const result = await getSaldosKardexVenta();
+        if (cancelado) return;
         setData(result);
         setError(null);
       } catch {
-        if (peticionRef.current !== miPeticion) return;
+        if (cancelado) return;
         setError("Error al ejecutar la consulta");
       } finally {
-        if (peticionRef.current === miPeticion) setLoading(false);
+        if (!cancelado) setLoading(false);
       }
-    }, 300);
+    })();
 
-    return () => window.clearTimeout(timer);
-  }, [filtro, soloConSaldo]);
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
-  const d = data?.filas ?? [];
+  const todas = data?.filas ?? [];
+
+  /**
+   * Filtering lives here, not in SQL. Case-insensitive and accent-sensitive,
+   * which is how the database collation compared before; the amount is matched
+   * against the formatted number without thousands separators, so typing
+   * "2,130.00" now finds what the grid shows.
+   */
+  const d = useMemo(() => {
+    const consulta = filtro.trim().toLowerCase();
+    const consultaNumero = consulta.replaceAll(",", "");
+
+    return todas.filter((r) => {
+      if (soloConSaldo && r.saldo === 0) return false;
+      if (!consulta) return true;
+      if (r.cliente.toLowerCase().includes(consulta)) return true;
+      return fmt(r.total).replaceAll(",", "").includes(consultaNumero);
+    });
+  }, [todas, filtro, soloConSaldo]);
+
   const cobrar = d.filter((r) => r.idTipo === 0);
   const entregar = d.filter((r) => r.idTipo === 1);
-  const totalCobrar = data?.totales.porCobrar ?? 0;
-  const totalEntregar = data?.totales.porEntregar ?? 0;
+
+  const totalCobrar = cobrar.reduce((acc, r) => acc + r.total, 0);
+  const totalEntregar = entregar.reduce((acc, r) => acc + r.total, 0);
 
   const filasOrdenadas = useMemo(() => {
     if (ordenTotal === null) return d;
@@ -183,7 +205,7 @@ export function KardexVentaLista() {
                   value={filtro}
                   onChange={(e) => setFiltro(e.target.value)}
                   maxLength={250}
-                  placeholder="Filtrar por cliente o total..."
+                  placeholder="Filtrar la tabla por cliente o total..."
                   autoComplete="off"
                   enterKeyHint="search"
                 />

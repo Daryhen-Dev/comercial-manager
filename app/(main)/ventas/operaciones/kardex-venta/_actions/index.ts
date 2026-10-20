@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
-import { escapeLike } from "../_lib/kardex-venta";
+
 
 /**
  * Rejects anything that is not a signed-in administrator.
@@ -51,9 +51,11 @@ export interface SaldoKardexVentaRow {
 }
 
 export interface SaldosKardexVentaResult {
+  /**
+   * Every client with kardex, unfiltered. The grid filters and totals in the
+   * browser, so no user text reaches SQL and typing does not re-query.
+   */
   filas: SaldoKardexVentaRow[];
-  /** Sumas de TOTAL por idTipo sobre las filas ya filtradas por cliente. */
-  totales: { porCobrar: number; porEntregar: number };
 }
 
 type RawSaldoRow = {
@@ -95,14 +97,8 @@ function mapSaldoRow(r: RawSaldoRow): SaldoKardexVentaRow {
   };
 }
 
-export async function getSaldosKardexVenta(
-  filtro: string,
-  soloConSaldo = true,
-): Promise<SaldosKardexVentaResult> {
+export async function getSaldosKardexVenta(): Promise<SaldosKardexVentaResult> {
   await requireAdmin();
-
-  const texto = escapeLike(filtro);
-  const conSaldo = soloConSaldo ? 1 : 0;
 
   const raw = await db.$queryRaw<RawSaldoRow[]>`
     WITH K AS (
@@ -129,24 +125,13 @@ export async function getSaldosKardexVenta(
            GETDATE() AS FECHASIS
     FROM K
     INNER JOIN Cliente CL ON CL.IDCliente = K.idCliente
-    -- ESCAPE '!': el escape es '!' (no '\') para evitar el citado de backslash
-    -- entre JS y SQL. Debe coincidir con escapeLike().
-    -- Filtro por cliente O por total (ABS(saldo) como texto, "contiene").
-    WHERE (CL.NombreCompleto LIKE N'%' + ${texto} + N'%' ESCAPE N'!'
-           OR CAST(ABS(K.SALDO) AS VARCHAR(50)) LIKE N'%' + ${texto} + N'%' ESCAPE N'!')
-      AND (${conSaldo} = 0 OR K.SALDO <> 0)
+    -- No WHERE: the filter belongs to the grid, not to SQL. Nothing typed by
+    -- a user reaches this query any more, which also removes the LIKE/ESCAPE
+    -- surface entirely.
     ORDER BY CL.NombreCompleto, K.idCliente
   `;
 
-  const filas = raw.map(mapSaldoRow);
-
-  const totales = { porCobrar: 0, porEntregar: 0 };
-  for (const f of filas) {
-    if (f.idTipo === 0) totales.porCobrar += f.total;
-    else totales.porEntregar += f.total;
-  }
-
-  return { filas, totales };
+  return { filas: raw.map(mapSaldoRow) };
 }
 
 export interface MovimientoKardexVentaRow {
