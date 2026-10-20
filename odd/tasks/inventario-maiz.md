@@ -69,7 +69,7 @@ cent on edge cases.
 
 - [x] Decide arithmetic strategy → exact (`cs-decimal`).
 - [x] `lib/cs-decimal` implemented and tested.
-- [ ] Queries: branches, products, closing date, validations.
+- [x] Queries: branches, products, closing date, validations (level 1).
 - [ ] Insumo queries (7 + conditional 8th).
 - [ ] Calculation engine and totals.
 - [ ] Grid projection.
@@ -101,6 +101,29 @@ change is a prerequisite of this library, not a preference.
 Note for future work: a stale `.next` keeps serving cached TypeScript
 diagnostics. After a `tsconfig.json` change, `rm -rf .next` before believing a
 build failure — several errors reported after the fix were never real.
+
+### Phase 2 — level-1 load (done)
+
+`_lib/datos/{contextos,errores,tipos,consultas,mapeadores}.ts` and
+`_lib/cargar-vista.ts` implement the documented level-1 pipeline with the SQL
+verbatim: branches excluding `IDLocal = 2`, `FillByMaiz` per branch, the closing
+date per branch, and the two validation queries per product.
+
+13 tests (`mapeadores.test.ts`) cover the mapper contract: scale preservation,
+the forced normal branch (`mmEstado=false`, MM zeros), the legacy `predioDia`
+spelling, the uppercase `SUCURSAL` alias that was a real bug in the reference
+port, `CargaCierreSinCierrePrevio` deliberately NOT being a `CargaCierreError`,
+and the column helpers rejecting NULL and wrong types.
+
+**Verified against the live database** with a temporary script (deleted): 7
+branches (all but 2), 4 of them with MAIZ, closing date for local 1
+`2026-10-13`, and a product row carrying `stock = "12373.17750800"` and
+`stockPrecio` with 27 decimals — which is exactly why `CsDecimal.parse` is
+required: Prisma would have returned those as `decimal.js` and lost the scale.
+
+**Real finding:** local 1 currently has **1 pending sale**, so
+`estadoFaltantes` is true and the report would be blocked with "ERROR, Compras o
+ventas por liquidar." That is inherited behaviour, not a bug.
 
 ### Phase 0 — schema compatibility (done)
 
