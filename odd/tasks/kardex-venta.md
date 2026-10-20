@@ -116,3 +116,37 @@ validated against the live schema.
   arithmetic. They are documented as limitations, not fixed.
 - No `error.tsx` / `global-error.tsx` exists, so a database failure on screen 2
   still reaches Next's default error page.
+
+
+## Filtering moved out of SQL
+
+Decision: the grid filters, not the query.
+
+`getSaldosKardexVenta` no longer takes `filtro` or `soloConSaldo`. It returns every
+client with kardex and the screen filters and totals in the browser over the
+already-loaded rows (517 today).
+
+Why:
+
+- **Nothing the user types reaches SQL.** The `LIKE`/`ESCAPE` pair is gone, and
+  with it `escapeLike`, which had no remaining consumer.
+- **No query per keystroke.** The 300 ms debounce and the latest-wins counter
+  existed only because every keystroke re-queried. Typing now filters in memory.
+- **R1 fixed by accident.** The amount was compared against
+  `CAST(ABS(SALDO) AS VARCHAR)`, without thousands separators, so typing
+  `2,130.00` — exactly what the grid shows — found nothing. The client compares
+  against the formatted number with commas stripped, so it matches now.
+
+Measured before the change: the whole query cost 13–19 ms warm, and removing the
+name `LIKE` only saved 2–6 ms. The gain is architectural, not timings.
+
+Collation parity: matching is case-insensitive and accent-sensitive in JS
+(`toLowerCase` only, no diacritic stripping), because `Modern_Spanish_CI_AS`
+treats `Ñ` and `N` as different.
+
+Deviation from the document: §4.2 defines the filter server-side and totals over
+the filtered rows in the action. Totals are now computed client-side over the
+filtered set, which produces the same numbers.
+
+Verified in the browser: 51 rows unfiltered, 1 with `AGRO`, 1 with `2,130.00`,
+back to 51 on clear, with no network request per keystroke.
