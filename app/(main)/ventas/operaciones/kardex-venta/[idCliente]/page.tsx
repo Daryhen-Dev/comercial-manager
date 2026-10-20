@@ -84,7 +84,7 @@ export default async function KardexVentaHistorialPage(
           <Badge
             variant={porEntregar ? "destructive" : "secondary"}
             className={cn(
-              !porEntregar && "bg-green-600/10 text-green-600 dark:text-green-500",
+              !porEntregar && "bg-positive/15 text-positive",
             )}
           >
             {data.tipo}
