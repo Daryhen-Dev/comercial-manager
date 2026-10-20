@@ -73,8 +73,8 @@ cent on edge cases.
 - [x] Insumo queries (7 + conditional 8th).
 - [x] Calculation engine and totals.
 - [x] Grid projection.
-- [ ] `/reportes` hub and route.
-- [ ] Client screen (cards, grid, blocks, error).
+- [x] `/reportes` hub and route.
+- [x] Client screen (cards, grid, blocks, error).
 - [ ] Tests.
 
 ## Evidence
@@ -124,6 +124,36 @@ required: Prisma would have returned those as `decimal.js` and lost the scale.
 **Real finding:** local 1 currently has **1 pending sale**, so
 `estadoFaltantes` is true and the report would be blocked with "ERROR, Compras o
 ventas por liquidar." That is inherited behaviour, not a bug.
+
+### Phase 6 — hub, route, action and screen (done)
+
+- `app/(main)/reportes/page.tsx`: the report hub with cards, gated by
+  `UsuarioRolId === 1`. It also links the Kardex, so the two modules are reachable
+  from one place.
+- `page.tsx` of the module: session check, `redirect("/reportes")` for a
+  non-administrator, `instant = false` for `cacheComponents`.
+- `_actions/inventario-maiz.ts`: `"use server"`, guard returning the typed
+  `{ status: "error", error: "Solo administradores." }`, then load → calculate →
+  project → DTO. Unexpected failures become `status: "error"` with the message.
+- `_components/inventario-maiz-screen.tsx`: clock through `useSyncExternalStore`
+  (empty until mounted, so no hydration mismatch), three total cards, the grid,
+  the blocking alert with the `--> COMPRAS O VENTAS POR LIQUIDAR` link and its
+  dialog, and the error state.
+- `_components/grilla-inventario.tsx`: 15 visible columns with their legacy
+  minimum widths, alignment decided per cell by a numeric pattern, legacy
+  LightGreen/LightYellow mapped to the documented hex with `text-black`, bold from
+  the style metadata, and keyboard navigation through the shared hook.
+- `_lib/formato-fecha.ts`: `es-EC` full date plus 24h time.
+
+**Deviation kept consistent with earlier decisions:** the active cell uses the
+surface-plus-ring treatment (`bg-accent` + inset jade ring) instead of the
+document's `bg-primary text-primary-foreground`, because these cells carry their
+own background colours and an inverted fill would erase them — the same defect
+already fixed in the Kardex grid.
+
+Verified: build green with both routes present, 82/82 tests, and both routes
+redirect to `/login` when unauthenticated. The authenticated render has not been
+seen: no browser and no credentials in this harness.
 
 ### Phase 5 — grid projection (done)
 

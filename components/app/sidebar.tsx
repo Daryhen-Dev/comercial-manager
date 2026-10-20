@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { ClipboardList, FileText, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 
 import { logout } from "@/app/(main)/_actions/logout";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ const APP_NAME = "Comercial Manager";
 
 const NAV = [
   { label: "Panel", href: "/", icon: LayoutDashboard },
+  { label: "Reportes", href: "/reportes", icon: FileText },
   {
     label: "Kardex de Venta",
     href: "/ventas/operaciones/kardex-venta",
