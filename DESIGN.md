@@ -2,19 +2,18 @@
 
 <!-- impeccable:design-schema 1 -->
 
-Scope: currently documents the **sign-in surface** (`/login`). The workspace
-inside `(main)` still runs on the default shadcn/ui light tokens and is recorded
-as an open item at the bottom, not as authority here.
+Scope: documents the **sign-in surface** (`/login`) and the dark workspace tokens
+that drive `(main)` and every module inside it.
 
 ## World
 
-**The door is dark, the workspace is light.**
+**One dark world, entered through a door made of light.**
 
 The product's first surface is the threshold of an administrative system used by
-people standing in a plant, holding a phone in one hand, with daylight washing
-the screen. The door is deliberately dark so that a single light reads on it.
-The workspace behind it stays light, because the work inside is reading tables in
-daylight.
+people standing in a plant, holding a phone in one hand. The whole application is
+dark by decision: the user rejected the light mode and kept this palette, so the
+door and the workspace share one ground. The door carries a single travelling
+light so the threshold reads as a threshold.
 
 One idea owns this surface: **a luminous arc travels the frame and closes into a
 circumference at the moment the door opens.** There is no second effect.
@@ -136,17 +135,21 @@ Every pair clears 4.5:1. Errors are announced with `role="alert"`, fields carry
 
 ---
 
-# Workspace (light)
+# Workspace (dark)
 
-The product has two grounds and they are deliberate opposites:
+The product is **dark only**. There is no light mode and no theme toggle: the
+user asked for a dark application and preferred the existing palette, so the same
+jade/ember family runs through both grounds.
 
 | | Ground | Why |
 | --- | --- | --- |
-| The door (`/login`) | dark, self-contained | one light has to read on it |
-| The workspace (`(main)`) | light, jade-tinted | reading tables and forms in daylight |
+| The door (`/login`) | near-black, self-contained | one light has to read on it |
+| The workspace (`(main)`) | near-black, jade-tinted | a single visual world, no mode switching |
 
-The sign-in surface carries its own tokens in `login.module.css` and does not
-consume these. The workspace tokens live in `app/globals.css`.
+The sign-in surface carries its own tokens in `login.module.css`. The workspace
+tokens live in `app/globals.css`, on the `:root, .dark` selector: `:root` keeps
+the first paint dark before the class applies, and `html.dark` switches the
+`dark:` utilities on. `app/layout.tsx` mounts `class="dark"` on `<html>`.
 
 ## Why the default theme felt flat
 
@@ -161,29 +164,28 @@ Two measured facts about the stock shadcn palette, both fixed here:
 
 ## Colour ramp
 
-Neutrals share one hue at very low chroma — `165`, the jade family — so the light
-workspace belongs to the same product as the dark door. Ratios measured against
-`--background`.
+Neutrals share one hue at very low chroma — `165`, the jade family. Ratios
+measured against `--background`.
 
 | Token | OKLCH | Hex | Ratio | Role |
 | --- | --- | --- | --- | --- |
-| `--background` | `0.995 0.004 165` | `#fbfefd` | — | page |
-| `--card` | `1 0 0` | `#ffffff` | — | raised surface |
-| `--muted` | `0.962 0.006 165` | `#eff4f1` | — | inset surface |
-| `--accent` | `0.955 0.014 165` | — | — | hover surface |
-| `--fg-strong` | `0.16 0.016 165` | `#070f0c` | 19.11 | display, h1, h2 |
-| `--foreground` | `0.24 0.014 165` | `#19211e` | 16.16 | body, h3 |
-| `--fg-soft` | `0.46 0.014 165` | `#515b56` | 6.98 | labels, supporting copy |
-| `--fg-faint` | `0.53 0.014 165` | `#656e6a` | 5.17 | metadata, placeholders, captions |
-| `--primary` | `0.52 0.11 165` | `#007c59` | 5.13 | jade accent; white on it = 5.06 |
-| `--destructive` | `0.53 0.19 27` | `#c22826` | 5.74 | warm red, same family as ember |
-| `--border` | `0.905 0.008 165` | `#dbe1de` | 1.31 | decorative hairline only |
-| `--input` | `0.64 0.012 165` | `#868f8a` | 3.30 | control boundary (WCAG 1.4.11) |
+| `--background` | `0.16 0.008 165` | `#0a0e0c` | — | page |
+| `--card` | `0.205 0.01 165` | `#131916` | — | raised surface |
+| `--muted` | `0.245 0.01 165` | `#1c221f` | — | inset surface |
+| `--accent` | `0.275 0.014 165` | — | — | hover surface |
+| `--fg-strong` | `0.98 0.004 165` | `#f6f9f8` | 18.32 | display, h1, h2 |
+| `--foreground` | `0.93 0.006 165` | `#e4e9e7` | 15.81 | body, h3 |
+| `--fg-soft` | `0.75 0.008 165` | `#a9b0ad` | 8.74 | labels, supporting copy |
+| `--fg-faint` | `0.665 0.01 165` | `#8e9692` | 6.38 | metadata, placeholders, captions |
+| `--primary` | `0.74 0.13 165` | `#47c496` | 8.90 | jade accent; ink on it = 8.75 |
+| `--destructive` | `0.68 0.17 27` | `#ef675c` | 6.24 | warm red, same family as ember |
+| `--border` | `0.32 0.01 165` | `#2e3531` | 1.53 | decorative hairline only |
+| `--input` | `0.52 0.012 165` | `#636b67` | 3.54 | control boundary (WCAG 1.4.11) |
 
 `--muted-foreground` is aliased to `--fg-soft` so components generated by
 `shadcn add` keep working while gaining the extra levels.
 
-Two deliberate separations: `--border` is for decoration and stays light;
+Two deliberate separations: `--border` is for decoration and stays low contrast;
 `--input` is the boundary of a control and clears 3:1. Using one token for both
 is how input fields end up invisible.
 
@@ -203,13 +205,16 @@ heading cannot be merely "body but bigger".
 | `text-label` | 0.8125rem | 1.35 | 500 | 0.01em | `fg-soft` |
 | `text-caption` | 0.75rem | 1.4 | 400 | 0.01em | `fg-faint` |
 
-Rule: **tone and type move together.** An `h2` is heavier, darker and tighter,
+Rule: **tone and type move together.** An `h2` is heavier, lighter and tighter,
 not "the same text at a larger size". Colour is one third of the hierarchy, not
 all of it.
 
-## Dark mode
+## Mobile-first rules for controls
 
-`.dark` is marked NOT DESIGNED in `globals.css`. There is no dark workspace in
-this product; the dark surface here is the sign-in door, which owns its tokens.
-The `.dark` block is kept only so the variant does not break, and it is not
-authority.
+- Filters stack: label above the field, and the field and the selector go
+  full-width on a phone, becoming one row only from `sm` up. A three-in-a-row
+  filter leaves the text input narrower than a client name.
+- Inputs and select triggers are `h-11` (44px) tall, the minimum comfortable
+  touch target for a standing, one-handed user.
+- The mobile shell uses a 3rem bar, so page content can rely on a known header
+  height instead of negative-margin tricks.
