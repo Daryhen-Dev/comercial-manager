@@ -75,7 +75,7 @@ cent on edge cases.
 - [x] Grid projection.
 - [x] `/reportes` hub and route.
 - [x] Client screen (cards, grid, blocks, error).
-- [ ] Tests.
+- [x] Tests.
 
 ## Evidence
 
@@ -124,6 +124,34 @@ required: Prisma would have returned those as `decimal.js` and lost the scale.
 **Real finding:** local 1 currently has **1 pending sale**, so
 `estadoFaltantes` is true and the report would be blocked with "ERROR, Compras o
 ventas por liquidar." That is inherited behaviour, not a bug.
+
+### Phase 7 — the remaining suites (done)
+
+Three files, 24 new tests:
+
+- `_actions/inventario-maiz.test.ts` — the guard returns the typed
+  "Solo administradores." error for no session, for a non-administrator role and
+  for a session missing `IDUsuario`, and in all three cases the load is never
+  reached. Blocked results carry the message and serialize the pending documents'
+  dates to ISO. Every returned DTO survives a JSON round trip, so no `Date` or
+  `CsDecimal` crosses the boundary.
+- `_lib/calcular-vista.test.ts` — block precedence with a single message
+  (inventory beats pending documents), and `cargarInsumosProducto` is NOT called
+  in either blocked state. On the calculated path it is called once per product
+  with that product's own closing date, and the totals are the weighted average
+  (two products give `1,780.00 / 78,000.00 / 43.82`).
+- `_lib/cargar-vista.test.ts` — per branch the products are queried before the
+  closing date; the closing date is queried for EVERY branch including one with
+  no MAIZ; validations accumulate per product without deduplication; the flags
+  come out as documented (a `-0.004` stock blocks, a `0.00` stock does not). It
+  also guards the SQL text: the product query filters the exact `'MAIZ'` and must
+  not select the MM columns, which would leave the normal branch unreachable.
+
+`vitest.config.ts` aliases `server-only` to a stub, because the real package
+throws outside a Server Component and the server units could not be imported at
+all otherwise.
+
+That closes the module: phases 1-7 complete, 106 tests over 9 files.
 
 ### Phase 6 — hub, route, action and screen (done)
 
