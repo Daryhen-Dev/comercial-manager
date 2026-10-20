@@ -11,6 +11,10 @@
   --color-fg-strong: var(--fg-strong);
   --color-fg-soft: var(--fg-soft);
   --color-fg-faint: var(--fg-faint);
+  --color-positive: var(--positive);
+  --color-warning: var(--warning);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-warning-foreground: var(--warning-foreground);
 
   /* Type scale. Size, line height, weight and tracking travel together, so a
      heading is never just "body but bigger". */
@@ -94,23 +98,28 @@
    switches the `dark:` utilities on.
    Neutrals share hue 165 at very low chroma — the jade family — so the workspace
    belongs to the same world as the sign-in door. Ratios measured vs background. */
+/* Dark-only workspace, on a navy ground (hue 258) rather than black: the user
+   rejected pure black. `:root` carries the palette so the first paint is already
+   dark, and `html.dark` switches the `dark:` utilities on.
+   The accent stays jade (hue 165), which reads as one product with the sign-in
+   door. Ratios measured vs background. */
 :root,
 .dark {
   color-scheme: dark;
 
-  --background: oklch(0.16 0.008 165); /* #0a0e0c */
-  --card: oklch(0.205 0.01 165); /* #131916 */
-  --popover: oklch(0.205 0.01 165);
-  --muted: oklch(0.245 0.01 165); /* #1c221f */
-  --accent: oklch(0.275 0.014 165);
-  --secondary: oklch(0.255 0.01 165);
+  --background: oklch(0.17 0.03 258); /* #07101c */
+  --card: oklch(0.212 0.032 258); /* #0f1927 */
+  --popover: oklch(0.212 0.032 258);
+  --muted: oklch(0.252 0.032 258); /* #182331 */
+  --accent: oklch(0.285 0.035 258);
+  --secondary: oklch(0.262 0.032 258);
 
   /* Four text tones. Pair every one with a size and a weight from the scale:
      colour alone does not build hierarchy. */
-  --fg-strong: oklch(0.98 0.004 165); /* 18.32 - display, h1, h2 */
-  --foreground: oklch(0.93 0.006 165); /* 15.81 - body, h3 */
-  --fg-soft: oklch(0.75 0.008 165); /*  8.74 - labels, supporting copy */
-  --fg-faint: oklch(0.665 0.01 165); /*  6.38 - metadata, placeholders, captions */
+  --fg-strong: oklch(0.98 0.006 258); /* 18.06 - display, h1, h2 */
+  --foreground: oklch(0.93 0.008 258); /* 15.57 - body, h3 */
+  --fg-soft: oklch(0.76 0.012 258); /*  8.91 - labels, supporting copy */
+  --fg-faint: oklch(0.67 0.014 258); /*  6.39 - metadata, placeholders, captions */
   --muted-foreground: var(--fg-soft);
 
   --card-foreground: var(--foreground);
@@ -118,24 +127,32 @@
   --secondary-foreground: var(--foreground);
   --accent-foreground: var(--fg-strong);
 
-  --primary: oklch(0.74 0.13 165); /*  8.90 - jade */
+  --primary: oklch(0.74 0.13 165); /*  8.78 - jade */
   --primary-foreground: oklch(0.17 0.02 165); /*  8.75 on primary */
-  --destructive: oklch(0.68 0.17 27); /*  6.24 - warm red, same family as ember */
-  --destructive-foreground: oklch(0.17 0.02 165); /*  6.13 on destructive */
+  --destructive: oklch(0.68 0.17 27); /*  6.15 - warm red, same family as ember */
+  --destructive-foreground: oklch(0.17 0.02 165);
 
-  --border: oklch(0.32 0.01 165); /*  1.53 - decorative hairline only */
-  --input: oklch(0.52 0.012 165); /*  3.54 - control boundary, WCAG 1.4.11 */
+  /* Semantic pairs for data colouring. Reports must never hardcode a palette
+     shade: `text-green-600` on a dark ground is what left text unreadable when
+     the theme inverted. */
+  --positive: oklch(0.8 0.15 165); /* 10.90 - a favour of the client */
+  --warning: oklch(0.83 0.14 85); /* 11.24 - mid age / attention */
+  --positive-foreground: oklch(0.17 0.02 165);
+  --warning-foreground: oklch(0.2 0.03 85);
+
+  --border: oklch(0.33 0.03 258); /*  1.57 - decorative hairline only */
+  --input: oklch(0.53 0.03 258); /*  3.63 - control boundary, WCAG 1.4.11 */
   --ring: oklch(0.74 0.13 165);
 
   --chart-1: oklch(0.74 0.13 165);
   --chart-2: oklch(0.6 0.1 165);
   --chart-3: oklch(0.68 0.17 27);
-  --chart-4: oklch(0.75 0.008 165);
-  --chart-5: oklch(0.45 0.06 165);
+  --chart-4: oklch(0.83 0.14 85);
+  --chart-5: oklch(0.76 0.012 258);
 
   --radius: 0.625rem;
 
-  --sidebar: oklch(0.19 0.009 165);
+  --sidebar: oklch(0.2 0.032 258);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);

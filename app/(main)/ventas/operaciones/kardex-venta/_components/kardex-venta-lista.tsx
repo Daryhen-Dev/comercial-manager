@@ -110,7 +110,7 @@ export function KardexVentaLista() {
         <span
           className={cn(
             "text-xs font-medium",
-            r.idTipo === 0 ? "text-green-600" : "text-destructive",
+            r.idTipo === 0 ? "text-positive" : "text-destructive",
           )}
         >
           {r.tipo}
@@ -134,7 +134,7 @@ export function KardexVentaLista() {
         <span
           className={cn(
             "font-semibold",
-            r.idTipo === 0 ? "text-green-600" : "text-destructive",
+            r.idTipo === 0 ? "text-positive" : "text-destructive",
           )}
         >
           {fmt(r.total)}
@@ -148,9 +148,9 @@ export function KardexVentaLista() {
         <span
           className={cn(
             "block -mx-3 -my-1.5 px-3 py-1.5",
-            r.nivelAntiguedad === "bajo" && "bg-green-100 dark:bg-green-900/40",
-            r.nivelAntiguedad === "medio" && "bg-yellow-100 dark:bg-yellow-900/40",
-            r.nivelAntiguedad === "alto" && "bg-red-200 dark:bg-red-900/40",
+            r.nivelAntiguedad === "bajo" && "bg-positive/15",
+            r.nivelAntiguedad === "medio" && "bg-warning/15",
+            r.nivelAntiguedad === "alto" && "bg-destructive/15",
           )}
         >
           {formatFechaVenta(r.fecha)}
@@ -218,7 +218,7 @@ export function KardexVentaLista() {
               </p>
               <p className="text-muted-foreground text-xs">{cobrar.length} clientes</p>
             </div>
-            <p className="font-mono text-lg font-bold text-green-600">
+            <p className="text-positive font-mono text-lg font-bold">
               {fmt(totalCobrar)}
             </p>
           </div>

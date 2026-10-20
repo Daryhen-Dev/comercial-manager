@@ -79,7 +79,7 @@ function columnas(): ReportColumn<MovimientoKardexVentaRow>[] {
           className={cn(
             "font-semibold",
             r.acumulado > 0
-              ? "text-green-600"
+              ? "text-positive"
               : r.acumulado < 0
                 ? "text-destructive"
                 : "",

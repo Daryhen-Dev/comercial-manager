@@ -17,7 +17,7 @@
 .screen {
   --from: #ff8a3d;
   --to: #2bd9a6;
-  --ground: #07090c;
+  --ground: #07101c;
   --ink: #f2f5f7;
   --ink-soft: #a8b3bd;
   --rule: rgb(255 255 255 / 0.13);
@@ -31,7 +31,7 @@
     max(1rem, env(safe-area-inset-left));
   color: var(--ink);
   background:
-    radial-gradient(120% 80% at 50% 0%, #101821 0%, transparent 62%),
+    radial-gradient(120% 80% at 50% 0%, #0f1c33 0%, transparent 62%),
     radial-gradient(90% 60% at 50% 110%, rgb(43 217 166 / 0.08) 0%, transparent 70%),
     var(--ground);
   /* Browser surfaces belong to the world too. */
@@ -123,7 +123,7 @@
   gap: 1.75rem;
   padding: 1.75rem 1.375rem 1.5rem;
   border-radius: 1.3125rem;
-  background: linear-gradient(180deg, #0c1116 0%, #080b0f 100%);
+  background: linear-gradient(180deg, #0d1826 0%, #08111c 100%);
 }
 
 .header {
