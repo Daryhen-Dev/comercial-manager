@@ -55,6 +55,7 @@ export type ReportTableProps<T> = {
   loading?: boolean;
   /** Let cells wrap instead of one line each. Disables virtualization. */
   wrap?: boolean;
+  /** Default is `middle`: rows read as one band. Use `top` for cells that wrap. */
   verticalAlign?: "top" | "middle";
   footer?: ReactNode;
   ariaLabel?: string;
@@ -72,7 +73,7 @@ export function ReportTable<T>({
   emptyMessage = "Sin resultados.",
   loading = false,
   wrap = false,
-  verticalAlign = "top",
+  verticalAlign = "middle",
   footer,
   ariaLabel,
 }: ReportTableProps<T>) {
