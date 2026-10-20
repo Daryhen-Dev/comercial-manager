@@ -95,6 +95,13 @@ Two distinct rounding rules are kept apart on purpose: mantissa reduction uses
 .NET oracle fixture from the reference repo is not available here. `pnpm test`
 reports 2 files / 37 tests passing (15 Kardex + 22 here).
 
+`BigInt` requires `"target": "ES2022"` in `tsconfig.json` (it was `ES2017`). The
+change is a prerequisite of this library, not a preference.
+
+Note for future work: a stale `.next` keeps serving cached TypeScript
+diagnostics. After a `tsconfig.json` change, `rm -rf .next` before believing a
+build failure — several errors reported after the fix were never real.
+
 ### Phase 0 — schema compatibility (done)
 
 Verified by reading `prisma/schema.prisma` against the SQL in §5.2: `Cierre`,
