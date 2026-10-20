@@ -128,8 +128,10 @@ export function InventarioMaizScreen({ inicial }: { inicial: ResultadoInventario
   const ahora = useReloj();
   const [faltantesOpen, setFaltantesOpen] = useState(false);
 
+  // Mobile first: the page grows with its content. Only from lg does it lock to
+  // the viewport and scroll internally.
   return (
-    <div className="flex h-full flex-col gap-4 p-4 lg:p-6">
+    <div className="flex flex-col gap-4 p-4 lg:h-full lg:p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-h1 text-fg-strong">INVENTARIO MAÍZ</h1>
         <div className="flex items-end gap-4">
@@ -212,7 +214,7 @@ export function InventarioMaizScreen({ inicial }: { inicial: ResultadoInventario
             />
           </section>
 
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex flex-col lg:min-h-0 lg:flex-1">
             <GrillaInventario
               filas={inicial.filas}
               mensajeVacio="Ninguna sucursal tiene MAIZ en su último cierre."

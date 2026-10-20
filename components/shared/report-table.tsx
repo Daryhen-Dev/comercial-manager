@@ -297,7 +297,7 @@ export function ReportTable<T>({
   const vacio = !loading && rows.length === 0;
 
   return (
-    <div className={cn("flex flex-col gap-3", fill && "h-full")}>
+    <div className={cn("flex flex-col gap-3", fill && "lg:h-full")}>
       <div
         ref={contenedorRef}
         role="presentation"
@@ -306,7 +306,7 @@ export function ReportTable<T>({
         className={cn(
           "focus-visible:ring-ring/50 focus-visible:ring-2 focus-visible:outline-none",
           fill
-            ? "min-h-0 flex-1 overflow-auto"
+            ? "overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-auto"
             : "max-h-[80vh] overflow-auto rounded-md border",
         )}
       >
