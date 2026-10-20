@@ -259,7 +259,11 @@ export function ReportTable<T>({
                       wrap ? "whitespace-normal" : "whitespace-nowrap",
                       verticalAlign === "top" ? "align-top" : "align-middle",
                       col.align === "right" && "text-right font-mono tabular-nums",
-                      activaAqui && "bg-primary text-primary-foreground",
+                      // Selection is a surface plus a ring, never a colour
+                      // inversion. Data cells carry semantic colours, and
+                      // filling the active cell with --primary put jade text on
+                      // a jade ground: positive/primary measured 1.24:1.
+                      activaAqui && "bg-accent ring-primary ring-2 ring-inset",
                       tablaFija && "overflow-hidden",
                       col.cellClassName,
                       col.rowClassName,
