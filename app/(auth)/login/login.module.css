@@ -18,8 +18,8 @@
   --from: #ff8a3d;
   --to: #2bd9a6;
   --ground: #07101c;
-  --ink: #f2f5f7;
-  --ink-soft: #a8b3bd;
+  --ink: #e6edf8;
+  --ink-soft: #a5b1c2;
   --rule: rgb(255 255 255 / 0.13);
 
   min-height: 100dvh;
@@ -178,7 +178,7 @@
 }
 
 .input::placeholder {
-  color: #7f8b96;
+  color: #8b97a8;
 }
 
 .input:hover {
@@ -265,7 +265,7 @@
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.45;
-  color: #7f8b96;
+  color: #8b97a8;
   font-variant-numeric: tabular-nums;
 }
 
