@@ -213,6 +213,19 @@ Data colouring follows two rules:
 | Attention / mid age | `text-warning` | `bg-warning/15` |
 | Negative / overdue | `text-destructive` | `bg-destructive/15` |
 
+### Cell selection is never a colour inversion
+
+`ReportTable` marks the active cell with a **surface plus a ring**
+(`bg-accent ring-2 ring-inset ring-primary`), not with `bg-primary
+text-primary-foreground`. The first version inverted the cell to jade, and every
+semantic text colour vanished into it: `positive` on `primary` measured **1.24:1**,
+`warning` 1.28, `destructive` 1.43. A selection cue must never overwrite the data
+it is selecting.
+
+With the surface treatment the data colours keep their contrast: positive 8.18,
+warning 8.44, destructive 4.62, `foreground` 11.68, and the jade ring itself
+6.59 against `--accent`.
+
 ## Type scale
 
 Defined in `@theme` with `--text-<name>--line-height`, `--font-weight` and
