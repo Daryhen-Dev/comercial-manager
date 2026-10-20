@@ -72,7 +72,7 @@ cent on edge cases.
 - [x] Queries: branches, products, closing date, validations (level 1).
 - [x] Insumo queries (7 + conditional 8th).
 - [x] Calculation engine and totals.
-- [ ] Grid projection.
+- [x] Grid projection.
 - [ ] `/reportes` hub and route.
 - [ ] Client screen (cards, grid, blocks, error).
 - [ ] Tests.
@@ -124,6 +124,44 @@ required: Prisma would have returned those as `decimal.js` and lost the scale.
 **Real finding:** local 1 currently has **1 pending sale**, so
 `estadoFaltantes` is true and the report would be blocked with "ERROR, Compras o
 ventas por liquidar." That is inherited behaviour, not a bug.
+
+### Phase 5 — grid projection (done)
+
+`_lib/grilla/` holds the 18-column metadata, the style constants and
+`proyectarInventarioAdmin`: two passes over all products, first those with
+movement (`COMPRA.qqBruto != 0 || VENTA.qqBruto != 0`, the gross quintales), then
+the rest. A product with movement renders 9 rows, one without renders 3. Every
+row always carries 18 cells, `celdasLegacy` records how many values the legacy
+passed, and no row writes cells 16/17.
+
+The legacy formatting quirk is preserved: the purchase's `efectivo` uses `F` (no
+thousands separator) while every other numeric cell uses `N2`. 13 tests.
+
+`_lib/tipos-dto.ts` defines the serializable `ResultadoInventarioMaiz` and
+`aFilaFaltante`, which turns the pending documents' `Date` into ISO strings; no
+`CsDecimal` and no `Date` crosses to the client.
+
+### End-to-end run against the live database
+
+The real mappers, engine and projection were run over the production data, with
+the SQL extracted from the source files (no query duplicated):
+
+```
+sucursales 7 · productos MAIZ 4
+estadoInventario false · estadoFaltantes TRUE (compras 0, ventas 1)
+filas de grilla 24   (2 con movimiento × 9 + 2 sin movimiento × 3)
+
+MAIZ VENTANAS  ANTERIOR 12,373.18 / 17.61 / 217,881.02
+               COMPRA   573.93 · 449.60 · 13.41 · 8.97 · 656.60 · 7,693.71
+               VENTA    202.82 · 202.82 · 18.00 · 3,650.76
+               STOCK    12,619.96 / 17.59 / 222,006.78
+               UTILIDAD 0.41 / 82.81
+MAIZ PECHICHE  STOCK: 961.43 · PRECIO: 16.99 · INVERSION: 16,330.48
+RESUMEN        stock 32,251.96 · precio 17.29 · inversion 557,790.68
+```
+
+That is exactly what the report would display once the pending sale is
+liquidated; today the block wins, as designed.
 
 ### Phase 3 — calculation engine and totals (done)
 
