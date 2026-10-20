@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, FileText, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { ClipboardList, LayoutDashboard, LogOut, Menu, Wheat, X } from "lucide-react";
 
 import { logout } from "@/app/(main)/_actions/logout";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,12 @@ const APP_NAME = "Comercial Manager";
 
 const NAV = [
   { label: "Panel", href: "/", icon: LayoutDashboard },
-  { label: "Reportes", href: "/reportes", icon: FileText },
+  // Direct entry: no hub in between.
+  {
+    label: "Inventario Maíz",
+    href: "/reportes/cierre/inventario-maiz",
+    icon: Wheat,
+  },
   {
     label: "Kardex de Venta",
     href: "/ventas/operaciones/kardex-venta",
