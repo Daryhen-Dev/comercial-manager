@@ -20,10 +20,21 @@ import {
 /** Numeric-looking content is right-aligned; text and null are left. */
 const NUMERICO = /^-?(\d+(,\d{3})*(\.\d+)?|\.\d+)$/;
 
-const BACKCOLOR: Record<ColorCelda, string> = {
-  LightBlue: "bg-[#ADD8E6] text-black",
-  LightGreen: "bg-[#90EE90] text-black",
-  LightYellow: "bg-[#FFFFE0] text-black",
+/**
+ * The legacy LightGreen/LightYellow were chosen for a white ground. On this navy
+ * workspace they became loud pale blocks that fought the theme, so the roles are
+ * preserved but expressed with theme tokens:
+ *
+ * - LightGreen marked the product's identity  -> jade tint, jade text.
+ * - LightYellow marked structure and labels    -> neutral surface, no colour.
+ *
+ * Bold still comes from the projection's style metadata, so the hierarchy that
+ * the legacy encoded in colour now comes from tone plus weight.
+ */
+const FONDO: Partial<Record<ColorCelda, string>> = {
+  LightGreen: "bg-positive/12",
+  LightYellow: "bg-muted/50",
+  LightBlue: "bg-accent",
 };
 
 const visibles = COLUMNAS_GRILLA.filter((c) => c.visible);
@@ -106,8 +117,13 @@ export function GrillaInventario({
                     className={cn(
                       "cursor-cell px-2 py-1 whitespace-nowrap",
                       numerico ? "text-right" : "text-left",
+                      estilo?.backColor && FONDO[estilo.backColor],
+                      // Identity cells read as the product: jade on a jade wash.
+                      estilo?.backColor === "LightGreen" && "text-positive",
+                      // Structure cells stay neutral; weight carries the emphasis.
+                      estilo?.backColor === "LightYellow" &&
+                        (estilo.bold ? "text-fg-strong" : "text-foreground"),
                       estilo?.bold && "font-bold",
-                      estilo?.backColor && BACKCOLOR[estilo.backColor],
                       // Selection is a surface plus a ring, never a colour
                       // inversion: these cells carry their own backgrounds.
                       activa && "bg-accent ring-primary ring-2 ring-inset",
