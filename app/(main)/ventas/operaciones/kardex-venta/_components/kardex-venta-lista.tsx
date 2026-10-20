@@ -159,8 +159,9 @@ export function KardexVentaLista() {
     },
   ];
 
+  // Mobile first: on a phone the page scrolls; lg locks it to the viewport.
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 lg:p-6">
+    <div className="flex flex-col gap-4 p-4 lg:h-full lg:min-h-0 lg:overflow-hidden lg:p-6">
       <div className="shrink-0">
         <h1 className="text-h2 text-fg-strong">Reporte Kardex de Venta</h1>
         <p className="text-label text-fg-soft">
@@ -242,7 +243,7 @@ export function KardexVentaLista() {
           <p className="text-sm">Consultando saldos, puede tardar unos segundos...</p>
         </div>
       ) : (
-        <div className="min-h-0 flex-1">
+        <div className="lg:min-h-0 lg:flex-1">
           <ReportTable
             rows={filasOrdenadas}
             columns={columns}

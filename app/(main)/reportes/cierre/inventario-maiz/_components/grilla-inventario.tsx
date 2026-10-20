@@ -89,7 +89,7 @@ export function GrillaInventario({
       aria-rowcount={filas.length}
       aria-colcount={visibles.length}
       tabIndex={0}
-      className="bg-card focus-visible:ring-ring/50 min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-2"
+      className="bg-card focus-visible:ring-ring/50 overflow-x-auto rounded-md border outline-none focus-visible:ring-2 lg:min-h-0 lg:flex-1 lg:overflow-auto"
     >
       <table className="w-max border-collapse font-mono text-xs tabular-nums">
         <tbody>
