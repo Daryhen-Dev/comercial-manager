@@ -27,9 +27,11 @@ function EstadoVacio() {
         variant="outline"
         size="sm"
         render={<Link href={RUTA_BASE} />}
+        nativeButton={false}
       >
         <ArrowLeft className="size-4" /> Volver al listado
-      </Button>    </div>
+      </Button>
+    </div>
   );
 }
 
@@ -53,7 +55,12 @@ export default async function KardexVentaHistorialPage(
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 lg:p-6">
       <div className="flex shrink-0 items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" render={<Link href={RUTA_BASE} />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={<Link href={RUTA_BASE} />}
+          nativeButton={false}
+        >
           <ArrowLeft className="size-4" /> Volver al listado
         </Button>
       </div>
