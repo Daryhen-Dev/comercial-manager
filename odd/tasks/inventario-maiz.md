@@ -71,7 +71,7 @@ cent on edge cases.
 - [x] `lib/cs-decimal` implemented and tested.
 - [x] Queries: branches, products, closing date, validations (level 1).
 - [x] Insumo queries (7 + conditional 8th).
-- [ ] Calculation engine and totals.
+- [x] Calculation engine and totals.
 - [ ] Grid projection.
 - [ ] `/reportes` hub and route.
 - [ ] Client screen (cards, grid, blocks, error).
@@ -124,6 +124,29 @@ required: Prisma would have returned those as `decimal.js` and lost the scale.
 **Real finding:** local 1 currently has **1 pending sale**, so
 `estadoFaltantes` is true and the report would be blocked with "ERROR, Compras o
 ventas por liquidar." That is inherited behaviour, not a bug.
+
+### Phase 3 — calculation engine and totals (done)
+
+`_lib/motor/` reproduces the three documented steps with `CsDecimal`:
+`comun.ts` (`oCero` / `divOCero` / `CierreCalculoError` / `envolver`),
+`compra-del-dia.ts`, `venta-del-dia.ts`, `inventario.ts` (the six rows and
+`inventarioNuevo`) and `calcular-producto.ts` wrapping each step so a failure
+names the product and the step. `sesion/mapeo-dto.ts` holds `resumirMaiz`, and
+`calcular-vista.ts` applies the block precedence.
+
+The legacy quirks are copied on purpose: the purchase's `porcentajeTotal` only
+short-circuits when BOTH merma and qqBruto are zero, so a division by zero
+propagates (B-9); sales use the fixed humidity literal `13`, not
+`Producto.HumedadSeco` (B-20); `utilidadTotal` is computed outside the legacy
+try, so it can overflow; and `resumirMaiz` catches any error into a zero price.
+
+**Verified against the specification's own worked example (§8.7)**: precioDelDia
+`15.010`, COMPRA efectivo `1020` (1000 + 20 commission), STOCK `100 / 10 / 1000`,
+UTILIDAD `2 / 200`, and the summary `"100.00" / "10.00" / "1,000.00"`. The
+two-product example gives `1,780.00 / 78,000.00 / 43.82`. The three documented
+error cases are covered too, including which step fails.
+
+13 tests. Total: 5 files, 69 tests.
 
 ### Phase 4 — level-2 insumos (done)
 
