@@ -114,12 +114,15 @@
   --accent: oklch(0.285 0.035 258);
   --secondary: oklch(0.262 0.032 258);
 
-  /* Four text tones. Pair every one with a size and a weight from the scale:
-     colour alone does not build hierarchy. */
-  --fg-strong: oklch(0.98 0.006 258); /* 18.06 - display, h1, h2 */
-  --foreground: oklch(0.93 0.008 258); /* 15.57 - body, h3 */
-  --fg-soft: oklch(0.76 0.012 258); /*  8.91 - labels, supporting copy */
-  --fg-faint: oklch(0.67 0.014 258); /*  6.39 - metadata, placeholders, captions */
+  /* Four text tones, all tinted toward the ground's blue. Never pure white on a
+     dark surface: it causes halation (the glyph bleeds) and tires the eye. The
+     hierarchy is two steps at the top on purpose -- titles are the brightest,
+     body is a bluish white, so the eye finds the title first.
+     Pair every tone with a size and a weight from the scale. */
+  --fg-strong: oklch(0.96 0.012 258); /* 17.04 - display, h1, h2 (the brightest) */
+  --foreground: oklch(0.88 0.02 258); /* 13.33 - body, h3 (bluish white) */
+  --fg-soft: oklch(0.73 0.022 258); /*  8.00 - labels, supporting copy */
+  --fg-faint: oklch(0.65 0.022 258); /*  5.94 - metadata, placeholders, captions */
   --muted-foreground: var(--fg-soft);
 
   --card-foreground: var(--foreground);
