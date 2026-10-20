@@ -170,35 +170,42 @@ export function KardexVentaLista() {
 
       <div className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-stretch">
         <Card className="shrink-0 gap-0 rounded-lg border p-3 lg:w-[36rem]">
-          <div className="flex items-center gap-3">
-            <Label htmlFor="filtro-busqueda" className="shrink-0">
-              Buscar
-            </Label>
-            <div className="relative min-w-0 flex-1">
-              <Input
-                id="filtro-busqueda"
-                value={filtro}
-                onChange={(e) => setFiltro(e.target.value)}
-                maxLength={250}
-                placeholder="Filtrar por cliente o total..."
-                autoComplete="off"
-              />
-              {loading ? (
-                <Loader2 className="text-muted-foreground absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin" />
-              ) : null}
+          {/* Mobile-first: on a phone the label, the field and the selector stack
+              at full width. One row only from `sm` up, where there is room. */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="filtro-busqueda">Buscar</Label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
+                <Input
+                  id="filtro-busqueda"
+                  className="h-11 pr-9"
+                  value={filtro}
+                  onChange={(e) => setFiltro(e.target.value)}
+                  maxLength={250}
+                  placeholder="Filtrar por cliente o total..."
+                  autoComplete="off"
+                  enterKeyHint="search"
+                />
+                {loading ? (
+                  <Loader2 className="text-muted-foreground absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin" />
+                ) : null}
+              </div>
+              <Select
+                value={soloConSaldo ? "con-saldo" : "todos"}
+                onValueChange={(v) => setSoloConSaldo(v === "con-saldo")}
+              >
+                <SelectTrigger
+                  className="h-11 w-full shrink-0 sm:w-40"
+                  aria-label="Clientes a mostrar"
+                >
+                  <SelectValue>{soloConSaldo ? "Solo con saldo" : "Todos"}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="con-saldo">Solo con saldo</SelectItem>
+                  <SelectItem value="todos">Todos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              value={soloConSaldo ? "con-saldo" : "todos"}
-              onValueChange={(v) => setSoloConSaldo(v === "con-saldo")}
-            >
-              <SelectTrigger className="w-36 shrink-0" aria-label="Clientes a mostrar">
-                <SelectValue>{soloConSaldo ? "Solo con saldo" : "Todos"}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="con-saldo">Solo con saldo</SelectItem>
-                <SelectItem value="todos">Todos</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           {error ? <p className="text-destructive mt-2 text-sm">{error}</p> : null}
         </Card>
