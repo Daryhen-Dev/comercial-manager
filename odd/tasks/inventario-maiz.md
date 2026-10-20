@@ -70,7 +70,7 @@ cent on edge cases.
 - [x] Decide arithmetic strategy → exact (`cs-decimal`).
 - [x] `lib/cs-decimal` implemented and tested.
 - [x] Queries: branches, products, closing date, validations (level 1).
-- [ ] Insumo queries (7 + conditional 8th).
+- [x] Insumo queries (7 + conditional 8th).
 - [ ] Calculation engine and totals.
 - [ ] Grid projection.
 - [ ] `/reportes` hub and route.
@@ -124,6 +124,27 @@ required: Prisma would have returned those as `decimal.js` and lost the scale.
 **Real finding:** local 1 currently has **1 pending sale**, so
 `estadoFaltantes` is true and the report would be blocked with "ERROR, Compras o
 ventas por liquidar." That is inherited behaviour, not a bug.
+
+### Phase 4 — level-2 insumos (done)
+
+`_lib/datos/consultas-insumos.ts` holds the eight queries verbatim (báscula,
+romana and general purchases; embo/anticipo; embodegado; báscula, bodeguita and
+general sales), every numeric output wrapped in `CONVERT(NVARCHAR(100), ...)` so
+the scale survives. `cargar-insumos.ts` reproduces the two `Promise.all` batches
+and the conditional eighth query, and concatenates
+báscula ++ romana ++ general and báscula ++ bodeguita ++ general.
+
+`mapeadores-insumos.ts` maps them; the báscula purchase forces `anticipo = 0`
+because that query does not select it, and the embo/anticipo mapper keeps
+last-row-wins.
+
+**All eight verified against the live database** by extracting the templates from
+the source file and running them (temporary script, deleted) for product 1 since
+its closing date: 6 báscula purchases, 1 romana, 0 general, 0 embodegado, 1
+báscula sale, 0 bodeguita, 0 general. That validated every table, column and
+alias without duplicating a line of SQL in the test harness.
+
+7 more mapper tests. Total: 4 files, 56 tests.
 
 ### Phase 0 — schema compatibility (done)
 
