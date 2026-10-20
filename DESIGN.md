@@ -222,6 +222,24 @@ Data colouring follows two rules:
 | Attention / mid age | `text-warning` | `bg-warning/15` |
 | Negative / overdue | `text-destructive` | `bg-destructive/15` |
 
+### Legacy palettes are translated, not copied
+
+The inventory grid arrived with the WinForms colours: `#90EE90` for the product
+identity and `#FFFFE0` for structure, with `text-black` on top. Those were chosen
+for a white ground and became large pale blocks that fought the navy workspace.
+
+The roles survive, the hex does not:
+
+| Legacy | Role | Now |
+| --- | --- | --- |
+| `LightGreen` | the product's identity | `bg-positive/12` + `text-positive` |
+| `LightYellow` | structure, labels, summaries | `bg-muted/50` + `text-fg-strong` when bold |
+| `LightBlue` | unused in this grid | `bg-accent` |
+
+The projection still emits the legacy colour names — that is data fidelity — and
+the presentation layer maps them to tokens. Weight carries the emphasis the
+legacy put in colour.
+
 ### Cell selection is never a colour inversion
 
 `ReportTable` marks the active cell with a **surface plus a ring**
