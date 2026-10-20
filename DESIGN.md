@@ -255,3 +255,7 @@ all of it.
   touch target for a standing, one-handed user.
 - The mobile shell uses a 3rem bar, so page content can rely on a known header
   height instead of negative-margin tricks.
+- Table cells are vertically centred (`align-middle`) by default: a row should
+  read as one band, not as text hanging from the top edge. `ReportTable` still
+  accepts `verticalAlign="top"` for cells that wrap to several lines, where top
+  alignment is the honest choice.
