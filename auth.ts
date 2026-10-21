@@ -2,12 +2,14 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { authConfig } from "./auth.config";
+import { ID_LOCAL_IMPLICITO, puedeIngresar } from "@/lib/acceso";
 import { db } from "@/lib/db";
 
 // This system only serves one branch, so the local is implicit rather than
 // chosen at login. A username can repeat across branches, so the lookup still
 // has to pin IDLocal. Changing branches is a code change on purpose.
-const ID_LOCAL_IMPLICITO = 1;
+// The rule itself (branch + administrator + enabled) lives in `lib/acceso.ts`
+// and is shared with the protected layout.
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -31,19 +33,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          const row = await db.usuario.findFirst({
+          // A username is not unique: the same person can exist twice in the
+          // branch (one row with a role, one without), so every candidate is
+          // considered instead of trusting `findFirst`'s arbitrary first row.
+          const rows = await db.usuario.findMany({
             where: {
               NombreUsuario: usuario,
               IDLocal: ID_LOCAL_IMPLICITO,
             },
+            orderBy: { IDUsuario: "asc" },
           });
 
-          if (!row) {
-            return null;
-          }
-
-          // Rejects both `false` and `null`.
-          if (row.Estado !== true) {
+          if (rows.length === 0) {
             return null;
           }
 
@@ -51,7 +52,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // `Clave` is a legacy NVarChar(Max) column owned by the WinForms
           // system; hashing it would lock out every existing user. This is a
           // deliberate compatibility constraint that must NOT be "fixed".
-          if (row.Clave !== clave) {
+          const conLaClaveCorrecta = rows.filter((row) => row.Clave === clave);
+          if (conLaClaveCorrecta.length === 0) {
+            return null;
+          }
+
+          // Enabled + this branch + administrator. Until this check existed, a
+          // cashier of branch 1 authenticated fine and was only bounced later by
+          // the protected layout, leaving a session behind.
+          const row = conLaClaveCorrecta.find(puedeIngresar);
+          if (!row) {
             return null;
           }
 
