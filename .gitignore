@@ -49,3 +49,5 @@ next-env.d.ts
 # `.github` is the single exception: it holds CI workflows and PR templates.
 .*/
 !.github/
+# Local Pi runtime state
+.atl/
