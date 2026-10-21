@@ -249,3 +249,82 @@ lookup against SQL Server. `npx tsc --noEmit` and `next build` both clean.
 - Legacy passwords are plaintext, which is a real security exposure inherited
   from the source system. Out of scope here, but it should be recorded as a
   known accepted risk rather than silently ignored.
+
+---
+
+## Follow-up: only administrators of branch 1 can sign in
+
+### What was wrong
+
+`authorize` pinned the branch (`IDLocal = 1`) but never checked the role. So any
+active **cashier** of VENTANAS exchanged credentials for a valid session and was
+only bounced later by `app/(main)/layout.tsx` (`redirect("/login?error=forbidden")`)
+— after next-auth had already minted the JWT cookie. The gate existed, but in the
+wrong layer: a session should never be issued to an account that cannot use the
+system.
+
+### The rule, in one place
+
+`lib/acceso.ts` now owns it: `puedeIngresar` (enabled **and** branch 1 **and**
+`UsuarioRolId === 1`) and `esAdminDeVentanas` (branch + role, for a session that
+already exists). Two enforcement points consume the same function:
+
+| Point | Uses | Effect |
+| --- | --- | --- |
+| `auth.ts` → `authorize` | `puedeIngresar` | no session is issued; the answer is the generic `CredentialsSignin`, identical to a wrong password |
+| `app/(main)/layout.tsx` | `esAdminDeVentanas` | re-checks every request, so a token minted before this rule stops working immediately |
+
+The product decision was **one message for every rejection** (wrong password,
+wrong branch, wrong role). Nothing in the login screen changed: a role rejection
+returns `null` exactly like a bad password, and the existing `CREDENTIALS_ERROR`
+copy already covers it. The screen cannot be used to discover which accounts exist.
+
+### A second defect, found while wiring it
+
+`NombreUsuario` is **not unique inside a branch**. `MARIELA` exists twice in
+`IDLocal = 1`: `#20` (administrator) and `#7111` (`UsuarioRolId` null). The old
+`findFirst` took whichever row the database returned first — if it returned the
+row without a role, the real administrator would have been refused once the role
+check landed. `authorize` now reads every candidate of the branch, filters by the
+password, and then picks the one the rule authorises.
+
+### Live verification against the production data
+
+The rule was evaluated over all 132 rows of `Usuario` (no password ever read or
+printed):
+
+| Account | Branch | Role | Enters |
+| --- | --- | --- | --- |
+| DARYHEN #1 | 1 | 1 | yes |
+| ALFREDO #5 | 1 | 1 | yes |
+| ROSARIO #7 | 1 | 1 | yes |
+| JULIA #12 | 1 | 1 | yes |
+| ROSARIOAD #15 | 1 | 1 | yes |
+| MARIELA #20 | 1 | 1 | yes (the row `#7111` no longer shadows her) |
+| a cashier of branch 1 | 1 | 2 | no |
+| ALFREDO VI, administrator of another branch | ≠1 | 1 | no |
+
+That is exactly **6** accounts, all administrators of VENTANAS. The user expected
+5, so one of the six should probably be disabled; `Usuario.Estado = 0` in the
+legacy system is enough, because the rule treats anything but `true` as a
+rejection — no deploy involved.
+
+In the browser, an existing session of DARYHEN (administrator, branch 1) still
+reaches `/reporte-maiz` unchanged, which is the no-regression check: the rule
+removes cashiers, not administrators.
+
+### Checks
+
+| Check | Result |
+| --- | --- |
+| `lib/acceso.test.ts` | 9 cases — branch, role, `Estado` `false`/`null`/absent, role 10 vs 1, session-side predicate |
+| `pnpm test` | 13 files, **155 tests** |
+| `npx tsc --noEmit` | clean |
+| `pnpm lint` | no findings in the touched files |
+
+### Still open
+
+- A **real cashier login** has not been attempted: it needs a genuine password,
+  which this harness must not read. The unit tests and the row-level evaluation
+  above cover the rule; the end-to-end rejection is unconfirmed.
+- The 6-vs-5 count is a data decision, not a code one.
