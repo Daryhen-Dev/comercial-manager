@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, LayoutDashboard, LogOut, Menu, Wheat, X } from "lucide-react";
+import { ClipboardList, FileSpreadsheet, LayoutDashboard, LogOut, Menu, Wheat, X } from "lucide-react";
 
 import { logout } from "@/app/(main)/_actions/logout";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,11 @@ const NAV = [
     label: "Inventario Maíz",
     href: "/reportes/cierre/inventario-maiz",
     icon: Wheat,
+  },
+  {
+    label: "Maíz por Cierre",
+    href: "/reporte-maiz",
+    icon: FileSpreadsheet,
   },
   {
     label: "Kardex de Venta",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, Wheat } from "lucide-react";
+import { ClipboardList, FileSpreadsheet, Wheat } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/auth";
@@ -28,6 +28,13 @@ export default async function ReportesPage() {
           description: "Stock de maíz de todas las sucursales desde el último cierre",
           href: "/reportes/cierre/inventario-maiz",
           icon: Wheat,
+          visible: esAdmin,
+        },
+        {
+          title: "Reporte Maíz por Cierre",
+          description: "Maíz guardado en el cierre elegido, con su selector de cierre",
+          href: "/reporte-maiz",
+          icon: FileSpreadsheet,
           visible: esAdmin,
         },
       ],

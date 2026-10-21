@@ -3,17 +3,11 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  AlertCircle,
-  CircleDollarSign,
-  LoaderCircle,
-  Tag,
-  Wheat,
-} from "lucide-react";
+import { AlertCircle, LoaderCircle } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TotalesMaiz } from "@/components/shared/totales-maiz";
 import {
   Dialog,
   DialogContent,
@@ -39,35 +33,6 @@ function useReloj(): Date | null {
     () => 0,
   );
   return segundos === 0 ? null : new Date(segundos * 1000);
-}
-
-function TotalCard({
-  titulo,
-  valor,
-  unidad,
-  icono: Icono,
-}: {
-  titulo: string;
-  valor: string;
-  unidad: string;
-  icono: typeof Wheat;
-}) {
-  return (
-    <Card size="sm">
-      <CardHeader className="flex flex-row items-center justify-between gap-3">
-        <CardTitle className="text-label text-fg-soft flex items-center gap-2">
-          <Icono className="text-fg-faint size-4" aria-hidden="true" />
-          {titulo}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col items-end gap-1">
-        <p className="text-h2 text-fg-strong font-mono font-semibold tracking-tight tabular-nums">
-          {valor}
-        </p>
-        <p className="text-caption text-fg-faint">{unidad}</p>
-      </CardContent>
-    </Card>
-  );
 }
 
 function FaltantesDialog({
@@ -195,24 +160,11 @@ export function InventarioMaizScreen({ inicial }: { inicial: ResultadoInventario
 
       {inicial.status === "ok" ? (
         <>
-          <section
-            aria-label="Totales del inventario de maíz"
-            className="grid shrink-0 gap-3 sm:grid-cols-3"
-          >
-            <TotalCard titulo="STOCK" valor={inicial.resumen.stock} unidad="qq" icono={Wheat} />
-            <TotalCard
-              titulo="PRECIO"
-              valor={inicial.resumen.precio}
-              unidad="$ / qq"
-              icono={Tag}
-            />
-            <TotalCard
-              titulo="INVERSION"
-              valor={inicial.resumen.inversion}
-              unidad="$"
-              icono={CircleDollarSign}
-            />
-          </section>
+          <TotalesMaiz
+            stock={inicial.resumen.stock}
+            precio={inicial.resumen.precio}
+            inversion={inicial.resumen.inversion}
+          />
 
           <div className="flex flex-col lg:min-h-0 lg:flex-1">
             <GrillaInventario
