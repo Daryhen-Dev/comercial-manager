@@ -1,15 +1,17 @@
 // PM2 process description for this Next.js app on Windows.
 //
-// Same shape as comercial-web's file, on purpose: `script: "cmd"` with
-// `args: "/c node_modules\\.bin\\next.cmd start"`. PM2 cannot execute the
-// generated `.cmd` shim by itself, so it has to be run through cmd.exe.
+// `script` points at Next's own JS entrypoint and `interpreter: "node"` makes
+// PM2 run it with node. Do NOT go back to `script: "cmd"` +
+// `args: "/c node_modules\\.bin\\next.cmd start"`: PM2 then tracks cmd.exe and
+// the real node process becomes an unmanaged grandchild. The symptoms are a
+// fake 4 MB memory reading, wrong CPU, and a `pm2 stop` that leaves the child
+// alive holding the port.
 //
-// `cwd` is the deployment folder, NOT the repository. Adjust it if this app
-// lands somewhere other than C:\apps\comercial-manager.
+// `cwd` is the deployment folder, NOT the repository. It must be the directory
+// where `pnpm build` produced `.next`.
 //
-// The PORT has to differ from comercial-web's (3000 on this machine, and 80 is
-// already held by http.sys). Two PM2 apps may share the daemon and the machine,
-// but never a listening port.
+// The PORT has to differ from comercial-web's. Two PM2 apps may share the
+// daemon and the machine, but never a listening port.
 //
 // Credentials are NOT here. `next start` loads `.env` (and `.env.local` before
 // it) from `cwd`, which is where DATABASE_URL and AUTH_SECRET must live on the
@@ -18,8 +20,9 @@ module.exports = {
   apps: [
     {
       name: "comercial-manager",
-      script: "cmd",
-      args: "/c node_modules\\.bin\\next.cmd start",
+      script: "node_modules/next/dist/bin/next",
+      args: "start",
+      interpreter: "node",
       cwd: "C:\\apps\\comercial-manager",
       env: {
         NODE_ENV: "production",
